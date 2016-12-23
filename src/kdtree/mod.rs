@@ -1,5 +1,9 @@
 mod test_common;
 mod partition;
+mod bounds;
+
+use ::std::cmp;
+use self::bounds::*;
 
 pub trait KdtreePointTrait {
     fn dims(&self) -> &[f64];
@@ -14,6 +18,8 @@ impl<T: KdtreePointTrait> Kdtree<T> {
         if points.len() == 0 {
             panic!("empty vector point not allowed");
         }
+
+        let rect = Bounds::new_from_points(&points);
 
         Kdtree {
             nodes: vec![],
@@ -56,7 +62,7 @@ impl<T: KdtreePointTrait> KdtreeNode<T> {
 
 
 #[cfg(test)]
-mod tests3 {
+mod tests {
     use ::kdtree::test_common::tests_utils::Point2WithId;
     use super::*;
 
@@ -65,7 +71,7 @@ mod tests3 {
     fn should_panic_given_empty_vector() {
         let empty_vec: Vec<Point2WithId> = vec![];
 
-        let tree = Kdtree::new(empty_vec);
+        Kdtree::new(empty_vec);
     }
 
     #[test]
@@ -74,6 +80,6 @@ mod tests3 {
         let p2 = Point2WithId::new(1, 1., 2.);
         let vec = vec![p1, p2];
 
-        let tree = Kdtree::new(vec);
+        Kdtree::new(vec);
     }
 }

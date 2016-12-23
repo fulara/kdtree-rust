@@ -163,7 +163,7 @@ mod tests {
                 vec.push(p);
             }
 
-            if(xs.len() == 0 ) {
+            if xs.len() == 0 {
                 return true;
             }
             let between = Range::new(0, xs.len());
