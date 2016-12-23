@@ -1,0 +1,10 @@
+[package]
+name = "kdtree-rust"
+version = "0.1.0"
+authors = ["Aleksander Fular <ntszar@gmail.com>"]
+
+[dependencies]
+rand = "*"
+
+[dev-dependencies]
+quickcheck = "0.3"
