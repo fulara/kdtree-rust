@@ -86,7 +86,7 @@ fn partition_kdtree<T: KdtreePointTrait>(vec: &mut Vec<T>, index_of_splitting_po
 
     let mut left = 0usize;
     let mut right = vec.len() - 2;
-    let mut last_succesful_swap = vec.len() -1;
+    let mut last_succesful_swap = vec.len() - 1;
 
     //variant of Lomuto algo.
     loop {
@@ -104,18 +104,16 @@ fn partition_kdtree<T: KdtreePointTrait>(vec: &mut Vec<T>, index_of_splitting_po
 
             left += 1;
             right -= 1;
-
-
         } else {
             break;
         }
     }
 
-    if last_succesful_swap == vec_len -1 && vec[right].dims()[partition_on_dimension] > pivot {
+    if last_succesful_swap == vec_len - 1 && vec[right].dims()[partition_on_dimension] > pivot {
         vec.swap(right, last_succesful_swap);
         last_succesful_swap = right;
     } else if vec[left].dims()[partition_on_dimension] > pivot {
-        vec.swap(left, vec_len -1);
+        vec.swap(left, vec_len - 1);
         last_succesful_swap = left;
     } else {
         vec.swap(last_succesful_swap, vec_len - 1);
