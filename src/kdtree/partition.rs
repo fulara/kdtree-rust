@@ -12,7 +12,7 @@ struct PartitionPointHelper {
     index_of_splitter: usize,
 }
 
-fn partition_sliding_midpoint_helper<T: KdtreePointTrait>(vec: &mut Vec<T>, midpoint_value: f64, partition_on_dimension: usize) -> PartitionPointHelper {
+fn partition_sliding_midpoint_helper<T: KdtreePointTrait>(vec: &mut [T], midpoint_value: f64, partition_on_dimension: usize) -> PartitionPointHelper {
     let mut closest_index = 0;
     let mut closest_distance = (vec[0].dims()[partition_on_dimension] - midpoint_value).abs();
 
@@ -51,10 +51,13 @@ fn partition_sliding_midpoint_helper<T: KdtreePointTrait>(vec: &mut Vec<T>, midp
     }
 }
 
-pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut Vec<T>, midpoint_value: f64, partition_on_dimension: usize) -> (usize, f64) {
+pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut [T], midpoint_value: f64, partition_on_dimension: usize) -> (usize, f64) {
     let vec_len = vec.len();
     debug_assert!(vec[0].dims().len() > partition_on_dimension);
-    debug_assert!(vec.len() > 1);
+
+    if vec.len() == 1 {
+        return (0, vec[0].dims()[partition_on_dimension]);
+    }
 
     let partition_point_data = partition_sliding_midpoint_helper(vec, midpoint_value, partition_on_dimension);
 
@@ -74,7 +77,7 @@ pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut Vec<T>, midpoin
     }
 }
 
-fn partition_kdtree<T: KdtreePointTrait>(vec: &mut Vec<T>, index_of_splitting_point: usize, partition_on_dimension: usize) -> usize {
+fn partition_kdtree<T: KdtreePointTrait>(vec: &mut [T], index_of_splitting_point: usize, partition_on_dimension: usize) -> usize {
     if vec.len() == 1 {
         return 0;
     }

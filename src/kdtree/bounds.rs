@@ -1,4 +1,3 @@
-
 use ::kdtree::*;
 
 pub struct Bounds {
@@ -11,7 +10,7 @@ impl Bounds {
             bounds: vec![],
         };
 
-        bounds.bounds.resize(points[0].dims().len(), (0.,0.));
+        bounds.bounds.resize(points[0].dims().len(), (0., 0.));
 
         for i in 0..points[0].dims().len() {
             bounds.bounds[i].0 = points[0].dims()[i];
@@ -43,6 +42,28 @@ impl Bounds {
 
         widest_dimension
     }
+
+    pub fn get_midvalue_of_widest_dim(&self) -> f64 {
+        (self.bounds[self.get_widest_dim()].0 + self.bounds[self.get_widest_dim()].1) / 2.0
+    }
+
+    pub fn clone_moving_max(&self, value: f64, dimension: usize) -> Bounds {
+        let mut cloned = Bounds {
+            bounds: self.bounds.clone()
+        };
+        cloned.bounds[dimension].1 = value;
+
+        cloned
+    }
+
+    pub fn clone_moving_min(&self, value: f64, dimension: usize) -> Bounds {
+        let mut cloned = Bounds {
+            bounds: self.bounds.clone()
+        };
+        cloned.bounds[dimension].0 = value;
+
+        cloned
+    }
 }
 
 
@@ -53,9 +74,10 @@ mod tests {
 
     #[test]
     fn bounds_test() {
-        let p1 = Point2WithId::new(1,1.0,0.5);
-        let p2 = Point2WithId::new(1,3.0,4.0);
-        let v = vec![p1,p2];
+        let p1 = Point2WithId::new(1, 1.0, 0.5);
+        let p2 = Point2WithId::new(1, 3.0, 4.0);
+        let v = vec![p1, p2];
+
 
         let bounds = Bounds::new_from_points(&v);
 
@@ -63,6 +85,5 @@ mod tests {
         assert_eq!((0.5, 4.0), bounds.bounds[1]);
 
         assert_eq!(1, bounds.get_widest_dim());
-
     }
 }

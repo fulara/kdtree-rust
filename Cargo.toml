@@ -3,8 +3,18 @@ name = "kdtree-rust"
 version = "0.1.0"
 authors = ["Aleksander Fular <ntszar@gmail.com>"]
 
+[lib]
+name = "kdtree"
+path = "src//lib.rs"
+bench = false
+
+[[bench]]
+name = "bench"
+harness = false
+
 [dependencies]
 rand = "*"
+bencher = "*"
 
 [dev-dependencies]
 quickcheck = "0.3"
