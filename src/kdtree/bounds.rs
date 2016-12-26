@@ -1,13 +1,18 @@
 use ::kdtree::*;
 
 pub struct Bounds {
-    pub bounds: Vec<(f64, f64)>
+    pub bounds: Vec<(f64, f64)>,
+
+    widest_dim : usize,
+    midvalue_of_widest_dim : f64,
 }
 
 impl Bounds {
     pub fn new_from_points<T: KdtreePointTrait>(points: &Vec<T>) -> Bounds {
         let mut bounds = Bounds {
             bounds: vec![],
+            widest_dim : 0,
+            midvalue_of_widest_dim : 0.,
         };
 
         bounds.bounds.resize(points[0].dims().len(), (0., 0.));
@@ -24,10 +29,44 @@ impl Bounds {
             }
         }
 
+        bounds.calculate_variables();
+
         bounds
     }
 
     pub fn get_widest_dim(&self) -> usize {
+        self.widest_dim
+    }
+
+    pub fn get_midvalue_of_widest_dim(&self) -> f64 {
+        self.midvalue_of_widest_dim
+    }
+
+    pub fn clone_moving_max(&self, value: f64, dimension: usize) -> Bounds {
+        let mut cloned = Bounds {
+            bounds: self.bounds.clone(),
+            ..*self
+        };
+        cloned.bounds[dimension].1 = value;
+
+        cloned.calculate_variables();
+
+        cloned
+    }
+
+    pub fn clone_moving_min(&self, value: f64, dimension: usize) -> Bounds {
+        let mut cloned = Bounds {
+            bounds: self.bounds.clone(),
+            ..*self
+        };
+        cloned.bounds[dimension].0 = value;
+
+        cloned.calculate_variables();
+
+        cloned
+    }
+
+    fn calculate_widest_dim(&mut self)  {
         let mut widest_dimension = 0usize;
         let mut max_found_spread = self.bounds[0].1 - self.bounds[0].0;
 
@@ -40,29 +79,12 @@ impl Bounds {
             }
         }
 
-        widest_dimension
+        self.widest_dim = widest_dimension;
     }
 
-    pub fn get_midvalue_of_widest_dim(&self) -> f64 {
-        (self.bounds[self.get_widest_dim()].0 + self.bounds[self.get_widest_dim()].1) / 2.0
-    }
-
-    pub fn clone_moving_max(&self, value: f64, dimension: usize) -> Bounds {
-        let mut cloned = Bounds {
-            bounds: self.bounds.clone()
-        };
-        cloned.bounds[dimension].1 = value;
-
-        cloned
-    }
-
-    pub fn clone_moving_min(&self, value: f64, dimension: usize) -> Bounds {
-        let mut cloned = Bounds {
-            bounds: self.bounds.clone()
-        };
-        cloned.bounds[dimension].0 = value;
-
-        cloned
+    fn calculate_variables(&mut self) {
+        self.calculate_widest_dim();
+        self.midvalue_of_widest_dim = (self.bounds[self.get_widest_dim()].0 + self.bounds[self.get_widest_dim()].1) / 2.0;
     }
 }
 
