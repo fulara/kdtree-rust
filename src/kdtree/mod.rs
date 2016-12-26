@@ -47,19 +47,15 @@ impl<T: KdtreePointTrait + Copy> Kdtree<T> {
         let splitting_value = node.split_on;
         let point_splitting_dim_value = p.dims()[dimension];
 
-        let mut closer_node : Option<usize>;
-        let mut farther_node : Option<usize>;
-
+        let (closer_node, farther_node) =
         if point_splitting_dim_value <= splitting_value {
-            closer_node = node.left_node;
-            farther_node = node.right_node;
+            (node.left_node, node.right_node)
         } else {
-            closer_node = node.right_node;
-            farther_node = node.left_node;
-        }
+            (node.right_node, node.left_node)
+        };
 
-        if closer_node.is_some() {
-            self.nearest_search_impl(p, closer_node.unwrap(), best_distance_squared, best_leaf_found);
+        if let Some(closer_node) = closer_node {
+            self.nearest_search_impl(p, closer_node, best_distance_squared, best_leaf_found);
         }
 
         let distance = squared_euclidean(p.dims(), node.point.dims());
@@ -68,14 +64,13 @@ impl<T: KdtreePointTrait + Copy> Kdtree<T> {
             *best_leaf_found = searched_index;
         }
 
-        if(farther_node.is_some()) {
+        if let Some(farther_node) = farther_node {
             let distance_on_single_dimension = squared_euclidean(&[splitting_value],&[point_splitting_dim_value]);
 
             if distance_on_single_dimension <= *best_distance_squared {
-                self.nearest_search_impl(p, farther_node.unwrap(), best_distance_squared, best_leaf_found);
+                self.nearest_search_impl(p, farther_node, best_distance_squared, best_leaf_found);
             }
         }
-
     }
 
 
