@@ -88,13 +88,13 @@ impl<T: KdtreePointTrait + Copy> Kdtree<T> {
         let nodes_len = nodes.len();
 
         if splitting_index > 0 {
-            let left_rect = bounds.clone_moving_max(bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
+            let left_rect = bounds.clone_moving_max(pivot_value, bounds.get_widest_dim());
             let left_child_id = self.build_tree(&mut nodes[0..splitting_index], &left_rect);
             self.nodes[node_id].left_node = Some(left_child_id);
         }
 
         if splitting_index < nodes.len() - 1 {
-            let right_rect = bounds.clone_moving_min(bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
+            let right_rect = bounds.clone_moving_min(pivot_value, bounds.get_widest_dim());
 
             let right_child_id = self.build_tree(&mut nodes[splitting_index + 1..nodes_len], &right_rect);
             self.nodes[node_id].right_node = Some(right_child_id);
