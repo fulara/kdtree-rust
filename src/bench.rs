@@ -48,7 +48,7 @@ impl kdtree::kdtree::KdtreePointTrait for Point3WithId {
     }
 }
 
-fn a(b: &mut Bencher) {
+fn bench_creating_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
     let mut points : Vec<Point2WithId> = vec![];
     //let mut kdtree = KdTree::new_with_capacity(3, 16);
@@ -63,7 +63,7 @@ fn a(b: &mut Bencher) {
     });
 }
 
-fn b(b: &mut Bencher) {
+fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
     let mut points : Vec<Point3WithId> = vec![];
     //let mut kdtree = KdTree::new_with_capacity(3, 16);
