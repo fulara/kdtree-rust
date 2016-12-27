@@ -13,9 +13,9 @@ test bench_single_loop_times_for_1000_node_tree ... bench:         162 ns/iter (
 test result: ok. 0 passed; 0 failed; 0 ignored; 3 measured
 ```
 
-~275ms to create a 1000_000 node tree. << this bench is now disabled. 
-~120us to create a 1000 node tree.
-160ns to query the tree.
+~275ms to create a 1000_000 node tree. << this bench is now disabled.  
+~120us to create a 1000 node tree.  
+160ns to query the tree.  
 
 ##License
 The Unlicense
