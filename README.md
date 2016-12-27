@@ -6,12 +6,14 @@ Implementation uses sliding midpoint variation of the tree. [More Info here](htt
 ##Benchmark
 `cargo bench` using travis :)
 ```
-running 2 tests
-test bench_creating_1000_node_tree              ... bench:     121,792 ns/iter (+/- 7,904)
-test bench_single_loop_times_for_1000_node_tree ... bench:         161 ns/iter (+/- 88)
-test result: ok. 0 passed; 0 failed; 0 ignored; 2 measured
+running 3 tests
+test bench_creating_1000_000_node_tree          ... bench: 275,155,622 ns/iter (+/- 32,713,321)
+test bench_creating_1000_node_tree              ... bench:     121,314 ns/iter (+/- 1,977)
+test bench_single_loop_times_for_1000_node_tree ... bench:         162 ns/iter (+/- 76)
+test result: ok. 0 passed; 0 failed; 0 ignored; 3 measured
 ```
 
+~275ms to create a 1000_000 node tree. << this bench is now disabled. 
 ~120us to create a 1000 node tree.
 160ns to query the tree.
 
