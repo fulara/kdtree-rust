@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate bencher;
+#[macro_use] extern crate bencher;
 extern crate kdtree;
 extern crate rand;
 
@@ -50,9 +49,9 @@ impl kdtree::kdtree::KdtreePointTrait for Point3WithId {
 
 fn bench_creating_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
-    let mut points : Vec<Point2WithId> = vec![];
+    let mut points: Vec<Point2WithId> = vec![];
     for id in 0..len {
-        let x : f64 = rand::random();
+        let x: f64 = rand::random();
         points.push(Point2WithId::new(id as i32, x, x));
     }
 
@@ -63,18 +62,30 @@ fn bench_creating_1000_node_tree(b: &mut Bencher) {
 
 fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
-    let mut points : Vec<Point3WithId> = vec![];
+    let mut points: Vec<Point3WithId> = vec![];
 
     for i in 0..len {
-        points.push(Point3WithId::new(i as i32, rand::random(),rand::random(),rand::random()))
-
+        points.push(Point3WithId::new(i as i32, rand::random(), rand::random(), rand::random()))
     }
 
     let tree = kdtree::kdtree::Kdtree::new(points.clone());
 
 
-    b.iter(||  tree.nearest_search(&points[0]));
+    b.iter(|| tree.nearest_search(&points[0]));
 }
 
-benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree);
+fn bench_creating_1000_000_node_tree(b: &mut Bencher) {
+    let len = 1000_000usize;
+    let mut points: Vec<Point2WithId> = vec![];
+    for id in 0..len {
+        let x: f64 = rand::random();
+        points.push(Point2WithId::new(id as i32, x, x));
+    }
+
+    b.iter(|| {
+        kdtree::kdtree::Kdtree::new(points.clone());
+    });
+}
+
+benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree, bench_creating_1000_000_node_tree);
 benchmark_main!(benches);
