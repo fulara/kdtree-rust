@@ -1,7 +1,10 @@
-mod test_common;
+#[cfg(test)]
+pub mod test_common;
+
+pub mod distance;
+
 mod partition;
 mod bounds;
-mod distance;
 
 use self::bounds::*;
 use self::distance::*;
@@ -125,7 +128,6 @@ impl<T: KdtreePointTrait> KdtreeNode<T> {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
