@@ -51,22 +51,19 @@ impl kdtree::kdtree::KdtreePointTrait for Point3WithId {
 fn bench_creating_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
     let mut points : Vec<Point2WithId> = vec![];
-    //let mut kdtree = KdTree::new_with_capacity(3, 16);
     for id in 0..len {
         let x : f64 = rand::random();
         points.push(Point2WithId::new(id as i32, x, x));
-        //   points.push(rand_data());
     }
 
     b.iter(|| {
-        let tree = kdtree::kdtree::Kdtree::new(points.clone());
+        kdtree::kdtree::Kdtree::new(points.clone());
     });
 }
 
 fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
     let mut points : Vec<Point3WithId> = vec![];
-    //let mut kdtree = KdTree::new_with_capacity(3, 16);
 
     for i in 0..len {
         points.push(Point3WithId::new(i as i32, rand::random(),rand::random(),rand::random()))
@@ -79,5 +76,5 @@ fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
     b.iter(||  tree.nearest_search(&points[0]));
 }
 
-benchmark_group!(benches, a,b);
+benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree);
 benchmark_main!(benches);
