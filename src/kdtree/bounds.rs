@@ -1,7 +1,7 @@
 use ::kdtree::*;
 
 pub struct Bounds {
-    pub bounds: [(f64,f64);3],//Vec<(f64, f64)>,
+    pub bounds: [(f64,f64);3],
 
     widest_dim : usize,
     midvalue_of_widest_dim : f64,
@@ -14,8 +14,6 @@ impl Bounds {
             widest_dim : 0,
             midvalue_of_widest_dim : 0.,
         };
-
-        //bounds.bounds.resize(points[0].dims().len(), (0., 0.));
 
         for i in 0..points[0].dims().len() {
             bounds.bounds[i].0 = points[0].dims()[i];
