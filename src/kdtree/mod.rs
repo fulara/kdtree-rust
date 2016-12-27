@@ -143,7 +143,7 @@ mod tests {
 
     quickcheck! {
         fn tree_build_creates_tree_with_as_many_leafs_as_there_is_points(xs : Vec<f64>) -> bool {
-            if(xs.len() == 0) {
+            if xs.len() == 0 {
                 return true;
             }
             let mut vec : Vec<Point2WithId> = vec![];
@@ -175,7 +175,7 @@ mod tests {
 
     quickcheck! {
         fn nearest_neighbor_search_using_qc(xs : Vec<f64>) -> bool {
-            if(xs.len() == 0) {
+            if xs.len() == 0 {
                 return true;
             }
 

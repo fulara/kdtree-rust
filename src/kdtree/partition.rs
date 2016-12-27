@@ -147,7 +147,7 @@ mod tests {
         let p6 = Point2WithId::new(5, 3., 8.);
         let p7 = Point2WithId::new(6, 4., 8.);
 
-        let mut vec = vec![p1, p2, p3, p4, p5, p6, p7];
+        let vec = vec![p1, p2, p3, p4, p5, p6, p7];
         assert_eq! (1, partition_kdtree(&mut vec.clone(), 3, 0));
 
         assert_eq! (6, partition_kdtree(&mut vec.clone(), 6, 0));
@@ -172,7 +172,7 @@ mod tests {
             let between = Range::new(0, xs.len());
             let mut rng = thread_rng();
 
-            for i in 0 .. 5 {
+            for _ in 0 .. 5 {
                 let random_splitting_index = between.ind_sample(&mut rng);
 
                 let mut vec = vec.clone();
