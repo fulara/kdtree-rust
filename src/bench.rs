@@ -87,5 +87,5 @@ fn bench_creating_1000_000_node_tree(b: &mut Bencher) {
     });
 }
 
-benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree, bench_creating_1000_000_node_tree);
+benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree);
 benchmark_main!(benches);
