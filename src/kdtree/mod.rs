@@ -18,12 +18,12 @@ pub struct Kdtree<T> {
 }
 
 impl<T: KdtreePointTrait + Copy> Kdtree<T> {
-    pub fn new(mut points: Vec<T>) -> Kdtree<T> {
+    pub fn new(mut points: &mut [T]) -> Kdtree<T> {
         if points.len() == 0 {
             panic!("empty vector point not allowed");
         }
 
-        let rect = Bounds::new_from_points(&points);
+        let rect = Bounds::new_from_points(points);
 
         let mut tree = Kdtree {
             nodes: vec![],
@@ -138,9 +138,9 @@ mod tests {
     #[test]
     #[should_panic(expected = "empty vector point not allowed")]
     fn should_panic_given_empty_vector() {
-        let empty_vec: Vec<Point2WithId> = vec![];
+        let mut empty_vec: Vec<Point2WithId> = vec![];
 
-        Kdtree::new(empty_vec);
+        Kdtree::new(&mut empty_vec);
     }
 
     quickcheck! {
@@ -155,7 +155,7 @@ mod tests {
                 vec.push(p);
             }
 
-            let tree = Kdtree::new(qc_value_vec_to_2d_points_vec(&xs));
+            let tree = Kdtree::new(&mut qc_value_vec_to_2d_points_vec(&xs));
 
             let mut to_iterate : Vec<usize> = vec![];
             to_iterate.push(0);
@@ -182,7 +182,7 @@ mod tests {
             }
 
             let point_vec = qc_value_vec_to_2d_points_vec(&xs);
-            let tree = Kdtree::new(point_vec.clone());
+            let tree = Kdtree::new(&mut point_vec.clone());
 
             for p in &point_vec {
                 let found_nn = tree.nearest_search(p);

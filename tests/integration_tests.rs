@@ -62,7 +62,7 @@ fn test_against_1000_random_points() {
         points.push(Point3WithId::new(i as i32, gen_random(),gen_random(),gen_random()));
     }
 
-    let tree = kdtree::kdtree::Kdtree::new(points.clone());
+    let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
     //test points pushed into the tree, id should be equal.
     for i in 0 .. point_count {

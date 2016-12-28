@@ -56,7 +56,7 @@ fn bench_creating_1000_node_tree(b: &mut Bencher) {
     }
 
     b.iter(|| {
-        kdtree::kdtree::Kdtree::new(points.clone());
+        kdtree::kdtree::Kdtree::new(&mut points.clone());
     });
 }
 
@@ -68,7 +68,7 @@ fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
         points.push(Point3WithId::new(i as i32, rand::random(), rand::random(), rand::random()))
     }
 
-    let tree = kdtree::kdtree::Kdtree::new(points.clone());
+    let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
 
     b.iter(|| tree.nearest_search(&points[0]));
@@ -83,7 +83,7 @@ fn bench_creating_1000_000_node_tree(b: &mut Bencher) {
     }
 
     b.iter(|| {
-        kdtree::kdtree::Kdtree::new(points.clone());
+        kdtree::kdtree::Kdtree::new(&mut points.clone());
     });
 }
 

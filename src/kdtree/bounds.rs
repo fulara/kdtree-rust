@@ -8,7 +8,7 @@ pub struct Bounds {
 }
 
 impl Bounds {
-    pub fn new_from_points<T: KdtreePointTrait>(points: &Vec<T>) -> Bounds {
+    pub fn new_from_points<T: KdtreePointTrait>(points: &[T]) -> Bounds {
         let mut bounds = Bounds {
             bounds: [(0.,0.),(0.,0.),(0.,0.)],
             widest_dim : 0,
