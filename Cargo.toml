@@ -1,5 +1,5 @@
 [package]
-name = "kdtree-rust"
+name = "kdtree_rust"
 version = "0.1.0"
 authors = ["Aleksander Fular <ntszar@gmail.com>"]
 
