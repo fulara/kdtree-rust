@@ -2,6 +2,10 @@
 name = "fux_kdtree"
 version = "0.1.1"
 authors = ["fulara <ntszar@gmail.com>"]
+repository = "https://github.com/fulara/kdtree-rust"
+keywords = ["tree", "dimension" , "nearest", "search", "neighbor", "lookup"]
+readme = "README.md"
+license = "Unlicense"
 description = "K-dimensional tree implemented in Rust for fast NN querying."
 
 [lib]
