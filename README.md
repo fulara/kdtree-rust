@@ -1,7 +1,8 @@
-# kdtree-rust [![Build Status](https://travis-ci.org/fulara/kdtree-rust.svg?branch=develop)](https://travis-ci.org/fulara/kdtree-rust)
+# kdtree-rust [![Build Status](https://travis-ci.org/fulara/kdtree-rust.svg?branch=develop)](https://travis-ci.org/fulara/kdtree-rust) [![Build Status](https://img.shields.io/crates/v/fux_kdtree.svg?branch=develop)](https://crates.io/crates/fux_kdtree)
 kdtree implementation for rust.
 
-Implementation uses sliding midpoint variation of the tree. [More Info here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.74.210&rep=rep1&type=pdf)
+Implementation uses sliding midpoint variation of the tree. [More Info here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.74.210&rep=rep1&type=pdf) 
+Implementation uses single `Vec<Node>` to store all its contents, allowing for quick access, and no memory fragmentation.
 
 ###Usage
 Tree can only be used with types implementing trait:
