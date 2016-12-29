@@ -1,7 +1,8 @@
 [package]
-name = "kdtree_rust"
+name = "fux_kdtree"
 version = "0.1.0"
-authors = ["Aleksander Fular <ntszar@gmail.com>"]
+authors = ["fulara <ntszar@gmail.com>"]
+description = "K-dimensional tree implemented in Rust for fast NN querying."
 
 [lib]
 name = "kdtree"
@@ -12,9 +13,7 @@ bench = false
 name = "bench"
 harness = false
 
-[dependencies]
-rand = "*"
-bencher = "*"
-
 [dev-dependencies]
 quickcheck = "0.3"
+rand = "*"
+bencher = "*"

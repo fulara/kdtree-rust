@@ -9,7 +9,7 @@ mod bounds;
 use self::bounds::*;
 use self::distance::*;
 
-pub trait KdtreePointTrait {
+pub trait KdtreePointTrait: Copy {
     fn dims(&self) -> &[f64];
 }
 
@@ -17,7 +17,7 @@ pub struct Kdtree<T> {
     nodes: Vec<KdtreeNode<T>>,
 }
 
-impl<T: KdtreePointTrait + Copy> Kdtree<T> {
+impl<T: KdtreePointTrait> Kdtree<T> {
     pub fn new(mut points: &mut [T]) -> Kdtree<T> {
         if points.len() == 0 {
             panic!("empty vector point not allowed");
@@ -34,16 +34,16 @@ impl<T: KdtreePointTrait + Copy> Kdtree<T> {
         tree
     }
 
-    pub fn nearest_search(&self, node : &T) -> T
+    pub fn nearest_search(&self, node: &T) -> T
     {
         let mut nearest_neighbor = 0usize;
         let mut best_distance = squared_euclidean(node.dims(), &self.nodes[0].point.dims());
-        self.nearest_search_impl(node, 0usize, &mut best_distance , &mut nearest_neighbor);
+        self.nearest_search_impl(node, 0usize, &mut best_distance, &mut nearest_neighbor);
 
         self.nodes[nearest_neighbor].point
     }
 
-    fn nearest_search_impl(&self, p : &T, searched_index: usize, best_distance_squared : &mut f64, best_leaf_found : &mut usize) {
+    fn nearest_search_impl(&self, p: &T, searched_index: usize, best_distance_squared: &mut f64, best_leaf_found: &mut usize) {
         let node = &self.nodes[searched_index];
 
         let dimension = node.dimension;
@@ -68,7 +68,7 @@ impl<T: KdtreePointTrait + Copy> Kdtree<T> {
         }
 
         if let Some(farther_node) = farther_node {
-            let distance_on_single_dimension = squared_euclidean(&[splitting_value],&[point_splitting_dim_value]);
+            let distance_on_single_dimension = squared_euclidean(&[splitting_value], &[point_splitting_dim_value]);
 
             if distance_on_single_dimension <= *best_distance_squared {
                 self.nearest_search_impl(p, farther_node, best_distance_squared, best_leaf_found);
@@ -77,8 +77,8 @@ impl<T: KdtreePointTrait + Copy> Kdtree<T> {
     }
 
 
-    fn add_node(&mut self, p: T, dimension : usize, split_on : f64) -> usize {
-        let node = KdtreeNode::new(p, dimension, split_on );
+    fn add_node(&mut self, p: T, dimension: usize, split_on: f64) -> usize {
+        let node = KdtreeNode::new(p, dimension, split_on);
 
         self.nodes.push(node);
         self.nodes.len() - 1
@@ -117,14 +117,14 @@ pub struct KdtreeNode<T> {
 }
 
 impl<T: KdtreePointTrait> KdtreeNode<T> {
-    fn new(p: T, splitting_dimension: usize, split_on_value : f64) -> KdtreeNode<T> {
+    fn new(p: T, splitting_dimension: usize, split_on_value: f64) -> KdtreeNode<T> {
         KdtreeNode {
             left_node: None,
             right_node: None,
 
             point: p,
-            dimension : splitting_dimension,
-            split_on : split_on_value
+            dimension: splitting_dimension,
+            split_on: split_on_value
         }
     }
 }
@@ -194,11 +194,11 @@ mod tests {
         }
     }
 
-    fn qc_value_vec_to_2d_points_vec(xs : &Vec<f64>) -> Vec<Point2WithId> {
-        let mut vec : Vec<Point2WithId> = vec![];
-        for i in 0 .. xs.len() {
+    fn qc_value_vec_to_2d_points_vec(xs: &Vec<f64>) -> Vec<Point2WithId> {
+        let mut vec: Vec<Point2WithId> = vec![];
+        for i in 0..xs.len() {
             let mut is_duplicated_value = false;
-            for j in 0 .. i {
+            for j in 0..i {
                 if xs[i] == xs[j] {
                     is_duplicated_value = true;
                     break;

@@ -1,6 +1,7 @@
 #[cfg(test)]
 pub mod tests_utils {
     use super::super::*;
+
     #[derive(Copy, Clone, PartialEq)]
     pub struct Point3WithId {
         dims: [f64; 3],

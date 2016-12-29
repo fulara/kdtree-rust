@@ -1,18 +1,18 @@
 use ::kdtree::*;
 
 pub struct Bounds {
-    pub bounds: [(f64,f64);3],
+    pub bounds: [(f64, f64); 3],
 
-    widest_dim : usize,
-    midvalue_of_widest_dim : f64,
+    widest_dim: usize,
+    midvalue_of_widest_dim: f64,
 }
 
 impl Bounds {
     pub fn new_from_points<T: KdtreePointTrait>(points: &[T]) -> Bounds {
         let mut bounds = Bounds {
-            bounds: [(0.,0.),(0.,0.),(0.,0.)],
-            widest_dim : 0,
-            midvalue_of_widest_dim : 0.,
+            bounds: [(0., 0.), (0., 0.), (0., 0.)],
+            widest_dim: 0,
+            midvalue_of_widest_dim: 0.,
         };
 
         for i in 0..points[0].dims().len() {
@@ -64,7 +64,7 @@ impl Bounds {
         cloned
     }
 
-    fn calculate_widest_dim(&mut self)  {
+    fn calculate_widest_dim(&mut self) {
         let mut widest_dimension = 0usize;
         let mut max_found_spread = self.bounds[0].1 - self.bounds[0].0;
 
