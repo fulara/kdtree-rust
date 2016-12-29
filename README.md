@@ -6,7 +6,7 @@ Implementation uses sliding midpoint variation of the tree. [More Info here](htt
 ###Usage
 Tree can only be used with types implementing trait:
 ```
-pub trait KdtreePointTrait : Clone  {
+pub trait KdtreePointTrait : Copy  {
     fn dims(&self) -> &[f64];
 }
 ```
@@ -25,7 +25,18 @@ impl KdtreePointTrait for Point3WithId {
     }
 }
 ```
-Where id is just a example of the way in which I carry the data. 
+Where id is just a example of the way in which I carry the data.  
+With that trait implemented you are good to go to use the tree. Keep in mind that the kdtree is not a self balancing tree, so it should not support continous add. right now the tree just handles the build up from Vec. Basic usage can be found in the integration test, fragment copied below:
+```
+let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
+
+//test points pushed into the tree, id should be equal.
+for i in 0 .. point_count {
+    let p = &points[i];
+
+    assert_eq!(p.id, tree.nearest_search(p).id );
+}
+```
 
 
 ##Benchmark
