@@ -2,23 +2,32 @@
 pub mod test_common;
 
 pub mod distance;
+pub mod buffors;
 
 mod partition;
 mod bounds;
 
 use self::bounds::*;
 use self::distance::*;
+use self::buffors::*;
 
 pub trait KdtreePointTrait: Copy {
     fn dims(&self) -> &[f64];
 }
 
-pub struct Kdtree<T> {
-    nodes: Vec<KdtreeNode<T>>,
+pub struct Kdtree<KdtreePoint, KdtreeBuffor> {
+    nodes: Vec<KdtreeNode<KdtreePoint>>,
+    buffor : KdtreeBuffor,
 }
 
-impl<T: KdtreePointTrait> Kdtree<T> {
-    pub fn new(mut points: &mut [T]) -> Kdtree<T> {
+impl<KdtreePoint : KdtreePointTrait> Kdtree<KdtreePoint, FakeKdtreeBuffor> {
+    pub fn new(mut points: &mut [KdtreePoint]) -> Kdtree<KdtreePoint, FakeKdtreeBuffor> {
+        Kdtree::new_with_buffor(&mut points, FakeKdtreeBuffor{})
+    }
+}
+
+impl<KdtreePoint: KdtreePointTrait, Buffor: KdtreeBuffor<KdtreePoint> > Kdtree<KdtreePoint, Buffor> {
+    pub fn new_with_buffor(mut points: &mut [KdtreePoint], buffor : Buffor) -> Kdtree<KdtreePoint, Buffor> {
         if points.len() == 0 {
             panic!("empty vector point not allowed");
         }
@@ -27,6 +36,7 @@ impl<T: KdtreePointTrait> Kdtree<T> {
 
         let mut tree = Kdtree {
             nodes: vec![],
+            buffor: buffor
         };
 
         tree.build_tree(&mut points, &rect);
@@ -34,7 +44,7 @@ impl<T: KdtreePointTrait> Kdtree<T> {
         tree
     }
 
-    pub fn nearest_search(&self, node: &T) -> T
+    pub fn nearest_search(&self, node: &KdtreePoint) -> KdtreePoint
     {
         let mut nearest_neighbor = 0usize;
         let mut best_distance = squared_euclidean(node.dims(), &self.nodes[0].point.dims());
@@ -43,7 +53,13 @@ impl<T: KdtreePointTrait> Kdtree<T> {
         self.nodes[nearest_neighbor].point
     }
 
-    fn nearest_search_impl(&self, p: &T, searched_index: usize, best_distance_squared: &mut f64, best_leaf_found: &mut usize) {
+    pub fn has_neighbor_in_range(&self, node: &KdtreePoint, range: f64) -> bool {
+        let squared_range = range * range;
+
+        squared_euclidean(&self.nearest_search(node).dims(), node.dims()) <= squared_range
+    }
+
+    fn nearest_search_impl(&self, p: &KdtreePoint, searched_index: usize, best_distance_squared: &mut f64, best_leaf_found: &mut usize) {
         let node = &self.nodes[searched_index];
 
         let dimension = node.dimension;
@@ -77,14 +93,14 @@ impl<T: KdtreePointTrait> Kdtree<T> {
     }
 
 
-    fn add_node(&mut self, p: T, dimension: usize, split_on: f64) -> usize {
+    fn add_node(&mut self, p: KdtreePoint, dimension: usize, split_on: f64) -> usize {
         let node = KdtreeNode::new(p, dimension, split_on);
 
         self.nodes.push(node);
         self.nodes.len() - 1
     }
 
-    fn build_tree(&mut self, nodes: &mut [T], bounds: &Bounds) -> usize {
+    fn build_tree(&mut self, nodes: &mut [KdtreePoint], bounds: &Bounds) -> usize {
         let (splitting_index, pivot_value) = partition::partition_sliding_midpoint(nodes, bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
 
         let node_id = self.add_node(nodes[splitting_index], bounds.get_widest_dim(), bounds.get_midvalue_of_widest_dim());
@@ -192,6 +208,18 @@ mod tests {
 
             true
         }
+    }
+
+    #[test]
+    fn has_neighbor_in_range() {
+        let mut vec: Vec<Point2WithId> = vec![Point2WithId::new(0,2.,0.)];
+
+        let tree = Kdtree::new(&mut vec);
+
+        assert_eq!(false,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 0.));
+        assert_eq!(false,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 1.));
+        assert_eq!(true,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 2.));
+        assert_eq!(true,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 300.));
     }
 
     fn qc_value_vec_to_2d_points_vec(xs: &Vec<f64>) -> Vec<Point2WithId> {
