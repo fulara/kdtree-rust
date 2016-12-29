@@ -1,6 +1,22 @@
 #[cfg(test)]
 pub mod tests_utils {
-    use ::kdtree::*;
+    use super::super::*;
+
+    #[derive(Copy, Clone, PartialEq)]
+    pub struct Point3WithId {
+        dims: [f64; 3],
+        pub id: i32,
+    }
+
+    impl Point3WithId {
+        pub fn new(id: i32, x: f64, y: f64, z: f64) -> Point3WithId {
+            Point3WithId {
+                dims: [x, y, z],
+                id: id,
+            }
+        }
+    }
+
     #[derive(Copy, Clone, PartialEq)]
     pub struct Point2WithId {
         dims: [f64; 2],

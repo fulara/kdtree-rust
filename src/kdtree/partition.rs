@@ -12,7 +12,7 @@ struct PartitionPointHelper {
     index_of_splitter: usize,
 }
 
-fn partition_sliding_midpoint_helper<T: KdtreePointTrait>(vec: &mut Vec<T>, midpoint_value: f64, partition_on_dimension: usize) -> PartitionPointHelper {
+fn partition_sliding_midpoint_helper<T: KdtreePointTrait>(vec: &mut [T], midpoint_value: f64, partition_on_dimension: usize) -> PartitionPointHelper {
     let mut closest_index = 0;
     let mut closest_distance = (vec[0].dims()[partition_on_dimension] - midpoint_value).abs();
 
@@ -51,10 +51,13 @@ fn partition_sliding_midpoint_helper<T: KdtreePointTrait>(vec: &mut Vec<T>, midp
     }
 }
 
-pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut Vec<T>, midpoint_value: f64, partition_on_dimension: usize) -> (usize, f64) {
+pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut [T], midpoint_value: f64, partition_on_dimension: usize) -> (usize, f64) {
     let vec_len = vec.len();
     debug_assert!(vec[0].dims().len() > partition_on_dimension);
-    debug_assert!(vec.len() > 1);
+
+    if vec.len() == 1 {
+        return (0, vec[0].dims()[partition_on_dimension]);
+    }
 
     let partition_point_data = partition_sliding_midpoint_helper(vec, midpoint_value, partition_on_dimension);
 
@@ -74,24 +77,52 @@ pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut Vec<T>, midpoin
     }
 }
 
-fn partition_kdtree<T: KdtreePointTrait>(vec: &mut Vec<T>, index_of_splitting_point: usize, partition_on_dimension: usize) -> usize {
+fn partition_kdtree<T: KdtreePointTrait>(vec: &mut [T], index_of_splitting_point: usize, partition_on_dimension: usize) -> usize {
+    if vec.len() == 1 {
+        return 0;
+    }
+
     let pivot = vec[index_of_splitting_point].dims()[partition_on_dimension];
     let vec_len = vec.len();
 
     vec.swap(index_of_splitting_point, vec_len - 1);
 
-    //using Lomuto variant of partition here, change it to hoare sometime?
-    let mut store_index = 0;
-    for left in 0..vec_len - 1 {
-        if vec[left].dims()[partition_on_dimension] <= pivot {
-            vec.swap(left, store_index);
-            store_index += 1;
+    let mut left = 0usize;
+    let mut right = vec.len() - 2;
+    let mut last_succesful_swap = vec.len() - 1;
+
+    //variant of Lomuto algo.
+    loop {
+        while left <= right && vec[left].dims()[partition_on_dimension] <= pivot {
+            left += 1;
+        }
+
+        while right > left && vec[right].dims()[partition_on_dimension] > pivot {
+            right -= 1;
+        }
+
+        if right > left {
+            vec.swap(left, right);
+            last_succesful_swap = right;
+
+            left += 1;
+            right -= 1;
+        } else {
+            break;
         }
     }
 
-    vec.swap(store_index, vec_len - 1);
+    if last_succesful_swap == vec_len - 1 && vec[right].dims()[partition_on_dimension] > pivot {
+        vec.swap(right, last_succesful_swap);
+        last_succesful_swap = right;
+    } else if vec[left].dims()[partition_on_dimension] > pivot {
+        vec.swap(left, vec_len - 1);
+        last_succesful_swap = left;
+    } else {
+        vec.swap(last_succesful_swap, vec_len - 1);
+    }
 
-    store_index
+    last_succesful_swap
 }
 
 
@@ -116,7 +147,7 @@ mod tests {
         let p6 = Point2WithId::new(5, 3., 8.);
         let p7 = Point2WithId::new(6, 4., 8.);
 
-        let mut vec = vec![p1, p2, p3, p4, p5, p6, p7];
+        let vec = vec![p1, p2, p3, p4, p5, p6, p7];
         assert_eq! (1, partition_kdtree(&mut vec.clone(), 3, 0));
 
         assert_eq! (6, partition_kdtree(&mut vec.clone(), 6, 0));
@@ -135,13 +166,13 @@ mod tests {
                 vec.push(p);
             }
 
-            if(xs.len() == 0 ) {
+            if xs.len() == 0 {
                 return true;
             }
             let between = Range::new(0, xs.len());
             let mut rng = thread_rng();
 
-            for i in 0 .. 5 {
+            for _ in 0 .. 5 {
                 let random_splitting_index = between.ind_sample(&mut rng);
 
                 let mut vec = vec.clone();
@@ -209,13 +240,13 @@ mod tests {
     fn assert_partition(v: &Vec<Point1WithId>, index_of_splitting_point: usize) -> bool {
         let pivot = v[index_of_splitting_point].dims()[0];
 
-        for i in 0 .. index_of_splitting_point {
+        for i in 0..index_of_splitting_point {
             if v[i].dims()[0] > pivot {
                 return false;
             }
         }
 
-        for i in index_of_splitting_point + 1 .. v.len() {
+        for i in index_of_splitting_point + 1..v.len() {
             if v[i].dims()[0] < pivot {
                 return false;
             }
