@@ -3,6 +3,31 @@ kdtree implementation for rust.
 
 Implementation uses sliding midpoint variation of the tree. [More Info here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.74.210&rep=rep1&type=pdf)
 
+###Usage
+Tree can only be used with types implementing trait:
+```
+pub trait KdtreePointTrait : Clone  {
+    fn dims(&self) -> &[f64];
+}
+```
+
+Thanks to this trait you can use any dimension. Keep in mind that the tree currently only supports up to 3D.  
+Examplary implementation would be:
+```
+pub struct Point3WithId {
+    dims: [f64; 3],
+    pub id: i32,
+}
+
+impl KdtreePointTrait for Point3WithId {
+    fn dims(&self) -> &[f64] {
+        return &self.dims;
+    }
+}
+```
+Where id is just a example of the way in which I carry the data. 
+
+
 ##Benchmark
 `cargo bench` using travis :)
 ```
