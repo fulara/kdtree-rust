@@ -1,6 +1,6 @@
 [package]
 name = "fux_kdtree"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["fulara <ntszar@gmail.com>"]
 description = "K-dimensional tree implemented in Rust for fast NN querying."
 
