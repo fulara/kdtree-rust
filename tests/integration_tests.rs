@@ -4,6 +4,7 @@ extern crate rand;
 use rand::Rng;
 
 use kdtree::kdtree::*;
+use kdtree::kdtree::test_common::tests_utils::*;
 
 //these could be taken from test_common, but I dont fully understand the module thingy yet.
 #[derive(Copy, Clone, PartialEq)]
@@ -66,7 +67,7 @@ fn generate_points(point_count : usize) -> Vec<Point3WithId> {
 #[test]
 fn test_against_1000_random_points() {
     let point_count = 1000usize;
-    let mut points = generate_points(point_count);
+    let points = generate_points(point_count);
 
     let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 

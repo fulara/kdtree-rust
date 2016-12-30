@@ -9,7 +9,7 @@ mod bounds;
 use self::bounds::*;
 use self::distance::*;
 
-pub trait KdtreePointTrait: Copy {
+pub trait KdtreePointTrait: Copy + PartialEq {
     fn dims(&self) -> &[f64];
 }
 
@@ -58,6 +58,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         let dimension = self.node_adding_dimension;
         let index_of_new_node = self.add_node(node_to_add,dimension,node_to_add.dims()[dimension]);
         self.node_adding_dimension = ( dimension + 1) % node_to_add.dims().len();
+        let mut should_pop_node = false;
 
         loop {
 
@@ -67,17 +68,29 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
                 if let Some(left_node_index) = current_node.left_node {
                     current_index = left_node_index
                 } else {
-                    current_node.left_node = Some(index_of_new_node);
+                    if current_node.point.eq(&node_to_add) {
+                        should_pop_node = true;
+                    } else {
+                        current_node.left_node = Some(index_of_new_node);
+                    }
                     break;
                 }
             } else {
                 if let Some(right_node_index) = current_node.right_node {
                     current_index = right_node_index
                 } else {
-                    current_node.right_node = Some(index_of_new_node);
+                    if current_node.point.eq(&node_to_add) {
+                        should_pop_node = true;
+                    } else {
+                        current_node.right_node = Some(index_of_new_node);
+                    }
                     break;
                 }
             }
+        }
+
+        if should_pop_node {
+            self.nodes.pop();
         }
     }
 
