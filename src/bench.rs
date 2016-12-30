@@ -23,7 +23,7 @@ fn generate_points(point_count : usize) -> Vec<Point3WithId> {
 
 fn bench_creating_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
-    let mut points = generate_points(len);
+    let points = generate_points(len);
 
     b.iter(|| {
         kdtree::kdtree::Kdtree::new(&mut points.clone());
@@ -32,7 +32,7 @@ fn bench_creating_1000_node_tree(b: &mut Bencher) {
 
 fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
     let len = 1000usize;
-    let mut points = generate_points(len);
+    let points = generate_points(len);
 
     let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
@@ -42,7 +42,7 @@ fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
 
 fn bench_creating_1000_000_node_tree(b: &mut Bencher) {
     let len = 1000_000usize;
-    let mut points = generate_points(len);
+    let points = generate_points(len);
 
     b.iter(|| {
         kdtree::kdtree::Kdtree::new(&mut points.clone());
@@ -62,5 +62,5 @@ fn bench_adding_same_node_to_1000_tree(b: &mut Bencher) {
 
 
 
-benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree, bench_adding_to_1000_tree);
+benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree, bench_adding_same_node_to_1000_tree);
 benchmark_main!(benches);
