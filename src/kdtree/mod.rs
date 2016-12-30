@@ -49,6 +49,20 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         squared_euclidean(&self.nearest_search(node).dims(), node.dims()) <= squared_range
     }
 
+    pub fn insert_node(&mut self, node_to_add : &KdtreePoint) {
+
+        let current_index = 0;
+        loop {
+            let current_node = &self.nodes[current_index];
+            if node_to_add.dims()[current_node.dimension] <= current_node.split_on {
+            } else {
+
+            }
+
+            break;
+        }
+    }
+
     fn nearest_search_impl(&self, p: &KdtreePoint, searched_index: usize, best_distance_squared: &mut f64, best_leaf_found: &mut usize) {
         let node = &self.nodes[searched_index];
 
@@ -95,7 +109,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
     fn build_tree(&mut self, nodes: &mut [KdtreePoint], bounds: &Bounds) -> usize {
         let (splitting_index, pivot_value) = partition::partition_sliding_midpoint(nodes, bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
 
-        let node_id = self.add_node(nodes[splitting_index], bounds.get_widest_dim(), bounds.get_midvalue_of_widest_dim());
+        let node_id = self.add_node(nodes[splitting_index], bounds.get_widest_dim(), pivot_value);
         let nodes_len = nodes.len();
 
         if splitting_index > 0 {
@@ -212,6 +226,18 @@ mod tests {
         assert_eq!(false,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 1.));
         assert_eq!(true,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 2.));
         assert_eq!(true,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 300.));
+    }
+
+    #[test]
+    fn incremental_add_adds_as_expected() {
+        let mut vec = vec![Point2WithId::new(0,0.,0.)];
+
+        let mut tree = Kdtree::new(&mut vec);
+
+        tree.insert_node(&Point2WithId::new(0,1.,0.));
+        tree.insert_node(&Point2WithId::new(0,-1.,0.));
+
+        assert_eq!(tree.nodes.len(), 3);
     }
 
     fn qc_value_vec_to_2d_points_vec(xs: &Vec<f64>) -> Vec<Point2WithId> {
