@@ -1,2 +1,4 @@
 language: rust
-script: cargo bench
+script: > 
+    cargo test
+    cargo bench
