@@ -12,7 +12,7 @@ pub trait KdtreePointTrait : Copy  {
 }
 ```
 
-Thanks to this trait you can use any dimension. Keep in mind that the tree currently only supports up to 3D.  
+Thanks to this trait you can use any dimension. Keep in mind that the tree currently only supports up to 3D [#2](/../../issues/2).  
 Examplary implementation would be:
 ```
 pub struct Point3WithId {
