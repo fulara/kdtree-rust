@@ -3,30 +3,8 @@ extern crate rand;
 
 use rand::Rng;
 
-use kdtree::kdtree::*;
-use kdtree::kdtree::test_common::tests_utils::*;
-
-//these could be taken from test_common, but I dont fully understand the module thingy yet.
-#[derive(Copy, Clone, PartialEq)]
-pub struct Point3WithId {
-    dims: [f64; 3],
-    pub id: i32,
-}
-
-impl Point3WithId {
-    pub fn new(id: i32, x: f64, y: f64, z: f64) -> Point3WithId {
-        Point3WithId {
-            dims: [x, y, z],
-            id: id,
-        }
-    }
-}
-
-impl KdtreePointTrait for Point3WithId {
-    fn dims(&self) -> &[f64] {
-        return &self.dims;
-    }
-}
+use kdtree::kdtree::test_common::*;
+use kdtree::kdtree::KdtreePointTrait;
 
 fn gen_random() -> f64 {
     rand::thread_rng().gen_range(0., 10000.)
@@ -36,8 +14,14 @@ fn gen_random_usize( max_value : usize) -> usize {
     rand::thread_rng().gen_range(0usize, max_value)
 }
 
+fn test() {
+
+}
+
+
 fn find_nn_with_linear_search<'a>(points : &'a Vec<Point3WithId>, find_for : Point3WithId) -> &Point3WithId {
     let distance_fun = kdtree::kdtree::distance::squared_euclidean;
+
 
     let mut best_found_distance =  distance_fun(find_for.dims(), points[0].dims());
     let mut closed_found_point = &points[0];
@@ -64,10 +48,12 @@ fn generate_points(point_count : usize) -> Vec<Point3WithId> {
     points
 }
 
+
 #[test]
 fn test_against_1000_random_points() {
     let point_count = 1000usize;
     let points = generate_points(point_count);
+    kdtree::kdtree::test_common::Point1WithId::new(0,0.);
 
     let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 

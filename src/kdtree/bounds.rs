@@ -90,7 +90,7 @@ impl Bounds {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::kdtree::test_common::tests_utils::*;
+    use ::kdtree::test_common::*;
 
     #[test]
     fn bounds_test() {

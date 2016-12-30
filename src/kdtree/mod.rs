@@ -1,6 +1,4 @@
-#[cfg(test)]
 pub mod test_common;
-
 pub mod distance;
 
 mod partition;
@@ -184,7 +182,7 @@ impl<T: KdtreePointTrait> KdtreeNode<T> {
 
 #[cfg(test)]
 mod tests {
-    use ::kdtree::test_common::tests_utils::Point2WithId;
+    use ::kdtree::test_common::Point2WithId;
 
     use super::*;
 
@@ -276,6 +274,19 @@ mod tests {
         assert_eq!(tree.nodes[2].point.dims()[0], -1.);
 
         assert_eq!(tree.nodes[0].right_node.is_some(), true);
+    }
+
+    #[test]
+    fn incremental_add_filters_duplicates() {
+        let mut vec = vec![Point2WithId::new(0,0.,0.)];
+
+        let mut tree = Kdtree::new(&mut vec);
+
+        let node = Point2WithId::new(0,1.,0.);
+        tree.insert_node(node);
+        tree.insert_node(node);
+
+        assert_eq!(tree.nodes.len(), 2);
     }
 
     fn qc_value_vec_to_2d_points_vec(xs: &Vec<f64>) -> Vec<Point2WithId> {

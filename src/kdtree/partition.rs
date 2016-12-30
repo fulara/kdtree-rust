@@ -129,7 +129,7 @@ fn partition_kdtree<T: KdtreePointTrait>(vec: &mut [T], index_of_splitting_point
 #[cfg(test)]
 mod tests {
     use ::kdtree::*;
-    use ::kdtree::test_common::tests_utils::*;
+    use ::kdtree::test_common::*;
 
     use ::rand::distributions::{IndependentSample, Range};
     use ::rand::*;
