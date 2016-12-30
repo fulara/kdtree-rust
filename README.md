@@ -21,6 +21,7 @@ pub struct Point3WithId {
 }
 
 impl KdtreePointTrait for Point3WithId {
+    #[inline] // the inline on this method is important! as without it there is ~25% speed loss on the tree when cross-crate usage.
     fn dims(&self) -> &[f64] {
         return &self.dims;
     }
@@ -45,9 +46,10 @@ for i in 0 .. point_count {
 ```
 running 3 tests
 test bench_creating_1000_000_node_tree          ... bench: 275,155,622 ns/iter (+/- 32,713,321)
-test bench_creating_1000_node_tree              ... bench:     121,314 ns/iter (+/- 1,977)
-test bench_single_loop_times_for_1000_node_tree ... bench:         162 ns/iter (+/- 76)
-test result: ok. 0 passed; 0 failed; 0 ignored; 3 measured
+test bench_adding_same_node_to_1000_tree        ... bench:          42 ns/iter (+/- 11)
+test bench_creating_1000_node_tree              ... bench:     120,310 ns/iter (+/- 4,746)
+test bench_single_lookup_times_for_1000_node_tree ... bench:         164 ns/iter (+/- 139)
+test result: ok. 0 passed; 0 failed; 0 ignored; 4 measured
 ```
 
 ~275ms to create a 1000_000 node tree. << this bench is now disabled.  
