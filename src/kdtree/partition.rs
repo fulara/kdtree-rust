@@ -186,7 +186,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn partition_given_midpoint_exactly_in_between_points_returns_smaller_index() {
         let p1 = Point2WithId::new(1, 2., 4.);
         let p2 = Point2WithId::new(1, 4., 6.);
@@ -197,7 +196,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn partition_given_midpoint_which_has_all_points_on_one_side_slides_split_plane_and_returns_index_to_closest_element() {
         let p1 = Point2WithId::new(1, 2., 4.);
         let p2 = Point2WithId::new(2, 4., 6.);

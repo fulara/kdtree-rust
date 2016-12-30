@@ -2,32 +2,23 @@
 pub mod test_common;
 
 pub mod distance;
-pub mod buffors;
 
 mod partition;
 mod bounds;
 
 use self::bounds::*;
 use self::distance::*;
-use self::buffors::*;
 
 pub trait KdtreePointTrait: Copy {
     fn dims(&self) -> &[f64];
 }
 
-pub struct Kdtree<KdtreePoint, KdtreeBuffor> {
+pub struct Kdtree<KdtreePoint> {
     nodes: Vec<KdtreeNode<KdtreePoint>>,
-    buffor : KdtreeBuffor,
 }
 
-impl<KdtreePoint : KdtreePointTrait> Kdtree<KdtreePoint, FakeKdtreeBuffor> {
-    pub fn new(mut points: &mut [KdtreePoint]) -> Kdtree<KdtreePoint, FakeKdtreeBuffor> {
-        Kdtree::new_with_buffor(&mut points, FakeKdtreeBuffor{})
-    }
-}
-
-impl<KdtreePoint: KdtreePointTrait, Buffor: KdtreeBuffor<KdtreePoint> > Kdtree<KdtreePoint, Buffor> {
-    pub fn new_with_buffor(mut points: &mut [KdtreePoint], buffor : Buffor) -> Kdtree<KdtreePoint, Buffor> {
+impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
+    pub fn new(mut points: &mut [KdtreePoint]) -> Kdtree<KdtreePoint> {
         if points.len() == 0 {
             panic!("empty vector point not allowed");
         }
@@ -36,7 +27,6 @@ impl<KdtreePoint: KdtreePointTrait, Buffor: KdtreeBuffor<KdtreePoint> > Kdtree<K
 
         let mut tree = Kdtree {
             nodes: vec![],
-            buffor: buffor
         };
 
         tree.build_tree(&mut points, &rect);
@@ -62,16 +52,10 @@ impl<KdtreePoint: KdtreePointTrait, Buffor: KdtreeBuffor<KdtreePoint> > Kdtree<K
     fn nearest_search_impl(&self, p: &KdtreePoint, searched_index: usize, best_distance_squared: &mut f64, best_leaf_found: &mut usize) {
         let node = &self.nodes[searched_index];
 
-        let dimension = node.dimension;
         let splitting_value = node.split_on;
-        let point_splitting_dim_value = p.dims()[dimension];
+        let point_splitting_dim_value = p.dims()[node.dimension];
 
-        let (closer_node, farther_node) =
-        if point_splitting_dim_value <= splitting_value {
-            (node.left_node, node.right_node)
-        } else {
-            (node.right_node, node.left_node)
-        };
+        let (closer_node, farther_node) = self.select_closer_farther_node(node, splitting_value, point_splitting_dim_value);
 
         if let Some(closer_node) = closer_node {
             self.nearest_search_impl(p, closer_node, best_distance_squared, best_leaf_found);
@@ -89,6 +73,14 @@ impl<KdtreePoint: KdtreePointTrait, Buffor: KdtreeBuffor<KdtreePoint> > Kdtree<K
             if distance_on_single_dimension <= *best_distance_squared {
                 self.nearest_search_impl(p, farther_node, best_distance_squared, best_leaf_found);
             }
+        }
+    }
+
+    fn select_closer_farther_node(&self, parent : &KdtreeNode<KdtreePoint>, parent_splits_dimension_on : f64, node_value_on_dimension : f64) -> (Option<usize>,Option<usize>) {
+        if node_value_on_dimension <= parent_splits_dimension_on {
+            (parent.left_node, parent.right_node)
+        } else {
+            (parent.right_node, parent.left_node)
         }
     }
 
