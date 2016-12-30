@@ -16,6 +16,7 @@ impl Point3WithId {
 }
 
 impl KdtreePointTrait for Point3WithId {
+    #[inline]
     fn dims(&self) -> &[f64] {
         return &self.dims;
     }
@@ -37,6 +38,7 @@ impl Point2WithId {
 }
 
 impl KdtreePointTrait for Point2WithId {
+    #[inline]
     fn dims(&self) -> &[f64] {
         return &self.dims;
     }
@@ -58,6 +60,7 @@ impl Point1WithId {
 }
 
 impl KdtreePointTrait for Point1WithId {
+    #[inline]
     fn dims(&self) -> &[f64] {
         return &self.dims;
     }

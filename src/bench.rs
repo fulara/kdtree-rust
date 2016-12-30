@@ -11,11 +11,11 @@ fn gen_random() -> f64 {
     rand::thread_rng().gen_range(0., 10000.)
 }
 
-fn generate_points(point_count : usize) -> Vec<Point3WithId> {
-    let mut points : Vec<Point3WithId> = vec![];
+fn generate_points(point_count: usize) -> Vec<Point3WithId> {
+    let mut points: Vec<Point3WithId> = vec![];
 
-    for i in 0 .. point_count {
-        points.push(Point3WithId::new(i as i32, gen_random(),gen_random(),gen_random()));
+    for i in 0..point_count {
+        points.push(Point3WithId::new(i as i32, gen_random(), gen_random(), gen_random()));
     }
 
     points
@@ -54,7 +54,7 @@ fn bench_adding_same_node_to_1000_tree(b: &mut Bencher) {
     let mut points = generate_points(len);
     let mut tree = kdtree::kdtree::Kdtree::new(&mut points);
 
-    let point = Point3WithId::new(-1 as i32, gen_random(),gen_random(),gen_random());
+    let point = Point3WithId::new(-1 as i32, gen_random(), gen_random(), gen_random());
     b.iter(|| {
         tree.insert_node(point);
     });
@@ -62,5 +62,5 @@ fn bench_adding_same_node_to_1000_tree(b: &mut Bencher) {
 
 
 
-benchmark_group!(benches, /* bench_creating_1000_node_tree, */ bench_single_loop_times_for_1000_node_tree /*,bench_adding_same_node_to_1000_tree */);
+benchmark_group!(benches, bench_creating_1000_node_tree, bench_single_loop_times_for_1000_node_tree,bench_adding_same_node_to_1000_tree);
 benchmark_main!(benches);
