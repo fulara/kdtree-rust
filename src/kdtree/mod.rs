@@ -15,6 +15,8 @@ pub trait KdtreePointTrait: Copy {
 
 pub struct Kdtree<KdtreePoint> {
     nodes: Vec<KdtreeNode<KdtreePoint>>,
+
+    node_adding_dimension: usize
 }
 
 impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
@@ -27,6 +29,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
 
         let mut tree = Kdtree {
             nodes: vec![],
+            node_adding_dimension: 0,
         };
 
         tree.build_tree(&mut points, &rect);
@@ -49,17 +52,32 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         squared_euclidean(&self.nearest_search(node).dims(), node.dims()) <= squared_range
     }
 
-    pub fn insert_node(&mut self, node_to_add : &KdtreePoint) {
+    pub fn insert_node(&mut self, node_to_add : KdtreePoint) {
 
-        let current_index = 0;
+        let mut current_index = 0;
+        let dimension = self.node_adding_dimension;
+        let index_of_new_node = self.add_node(node_to_add,dimension,node_to_add.dims()[dimension]);
+        self.node_adding_dimension = ( dimension + 1) % node_to_add.dims().len();
+
         loop {
-            let current_node = &self.nodes[current_index];
+
+            let current_node = &mut self.nodes[current_index];
+
             if node_to_add.dims()[current_node.dimension] <= current_node.split_on {
+                if let Some(left_node_index) = current_node.left_node {
+                    current_index = left_node_index
+                } else {
+                    current_node.left_node = Some(index_of_new_node);
+                    break;
+                }
             } else {
-
+                if let Some(right_node_index) = current_node.right_node {
+                    current_index = right_node_index
+                } else {
+                    current_node.right_node = Some(index_of_new_node);
+                    break;
+                }
             }
-
-            break;
         }
     }
 
@@ -234,10 +252,17 @@ mod tests {
 
         let mut tree = Kdtree::new(&mut vec);
 
-        tree.insert_node(&Point2WithId::new(0,1.,0.));
-        tree.insert_node(&Point2WithId::new(0,-1.,0.));
+        tree.insert_node(Point2WithId::new(0,1.,0.));
+        tree.insert_node(Point2WithId::new(0,-1.,0.));
 
         assert_eq!(tree.nodes.len(), 3);
+        assert_eq!(tree.nodes[0].dimension, 0);
+
+        assert_eq!(tree.nodes[0].left_node.is_some(), true);
+        assert_eq!(tree.nodes[1].point.dims()[0], 1.);
+        assert_eq!(tree.nodes[2].point.dims()[0], -1.);
+
+        assert_eq!(tree.nodes[0].right_node.is_some(), true);
     }
 
     fn qc_value_vec_to_2d_points_vec(xs: &Vec<f64>) -> Vec<Point2WithId> {

@@ -53,14 +53,20 @@ fn find_nn_with_linear_search<'a>(points : &'a Vec<Point3WithId>, find_for : Poi
     closed_found_point
 }
 
-#[test]
-fn test_against_1000_random_points() {
+fn generate_points(point_count : usize) -> Vec<Point3WithId> {
     let mut points : Vec<Point3WithId> = vec![];
 
-    let point_count = 1000usize;
     for i in 0 .. point_count {
         points.push(Point3WithId::new(i as i32, gen_random(),gen_random(),gen_random()));
     }
+
+    points
+}
+
+#[test]
+fn test_against_1000_random_points() {
+    let point_count = 1000usize;
+    let mut points = generate_points(point_count);
 
     let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
@@ -79,5 +85,35 @@ fn test_against_1000_random_points() {
         let point_found_by_kdtree = tree.nearest_search(&p);
 
         assert_eq!(point_found_by_kdtree.id, found_by_linear_search.id);
+    }
+}
+
+#[test]
+fn test_incrementally_build_tree_against_built_at_once() {
+    let point_count = 2000usize;
+    let mut points = generate_points(point_count);
+
+    let tree_built_at_once = kdtree::kdtree::Kdtree::new(&mut points.clone());
+    let mut tree_built_incrementally = kdtree::kdtree::Kdtree::new(&mut points[0..1]);
+
+    for i in 1 .. point_count {
+        let p = &points[i];
+
+        tree_built_incrementally.insert_node(p.clone());
+    }
+
+
+    //test points pushed into the tree, id should be equal.
+    for i in 0 .. point_count {
+        let p = &points[i];
+
+        assert_eq!(tree_built_at_once.nearest_search(p).id, tree_built_incrementally.nearest_search(p).id);
+    }
+
+
+    //test randomly generated points within the cube. and do the linear search. should match
+    for _ in 0 .. 5000 {
+        let p = Point3WithId::new(0i32, gen_random(), gen_random(), gen_random());
+        assert_eq!(tree_built_at_once.nearest_search(&p).id, tree_built_incrementally.nearest_search(&p).id);
     }
 }
