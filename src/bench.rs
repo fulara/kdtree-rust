@@ -62,5 +62,5 @@ fn bench_adding_same_node_to_1000_tree(b: &mut Bencher) {
 
 
 
-benchmark_group!(benches, bench_creating_1000_node_tree,bench_single_loop_times_for_1000_node_tree, bench_adding_same_node_to_1000_tree);
+benchmark_group!(benches, /* bench_creating_1000_node_tree, */ bench_single_loop_times_for_1000_node_tree /*,bench_adding_same_node_to_1000_tree */);
 benchmark_main!(benches);

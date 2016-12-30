@@ -98,7 +98,11 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         let splitting_value = node.split_on;
         let point_splitting_dim_value = p.dims()[node.dimension];
 
-        let (closer_node, farther_node) = self.select_closer_farther_node(node, splitting_value, point_splitting_dim_value);
+        let (closer_node, farther_node) = if point_splitting_dim_value <= splitting_value {
+            (node.left_node, node.right_node)
+        } else {
+            (node.right_node, node.left_node)
+        };
 
         if let Some(closer_node) = closer_node {
             self.nearest_search_impl(p, closer_node, best_distance_squared, best_leaf_found);
@@ -118,15 +122,6 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
             }
         }
     }
-
-    fn select_closer_farther_node(&self, parent : &KdtreeNode<KdtreePoint>, parent_splits_dimension_on : f64, node_value_on_dimension : f64) -> (Option<usize>,Option<usize>) {
-        if node_value_on_dimension <= parent_splits_dimension_on {
-            (parent.left_node, parent.right_node)
-        } else {
-            (parent.right_node, parent.left_node)
-        }
-    }
-
 
     fn add_node(&mut self, p: KdtreePoint, dimension: usize, split_on: f64) -> usize {
         let node = KdtreeNode::new(p, dimension, split_on);
