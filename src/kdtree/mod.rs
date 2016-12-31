@@ -71,7 +71,11 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
     pub fn has_neighbor_in_range(&self, node: &KdtreePoint, range: f64) -> bool {
         let squared_range = range * range;
 
-        squared_euclidean(&self.nearest_search(node).dims(), node.dims()) <= squared_range
+        self.distance_squared_to_nearest(node) <= squared_range
+    }
+
+    pub fn distance_squared_to_nearest(&self, node: &KdtreePoint) -> f64 {
+        squared_euclidean(&self.nearest_search(node).dims(), node.dims())
     }
 
     pub fn insert_node(&mut self, node_to_add : KdtreePoint) {
