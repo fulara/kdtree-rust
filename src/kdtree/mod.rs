@@ -165,7 +165,8 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
     }
 
     fn build_tree(&mut self, nodes: &mut [KdtreePoint], bounds: &Bounds, depth : usize) -> usize {
-        let (splitting_index, pivot_value) = partition::partition_sliding_midpoint(nodes, bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
+        let splitting_index = partition::partition_sliding_midpoint(nodes, bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
+        let pivot_value = nodes[splitting_index].dims()[bounds.get_widest_dim()];
 
         let node_id = self.add_node(nodes[splitting_index], bounds.get_widest_dim(), pivot_value);
         let nodes_len = nodes.len();
