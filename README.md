@@ -28,7 +28,7 @@ impl KdtreePointTrait for Point3WithId {
 }
 ```
 Where id is just a example of the way in which I carry the data.  
-With that trait implemented you are good to go to use the tree. Keep in mind that the kdtree is not a self balancing tree, so it should not support continous add. right now the tree just handles the build up from Vec. Basic usage can be found in the integration test, fragment copied below:
+With that trait implemented you are good to go to use the tree. Keep in mind that the kdtree is not a self balancing tree, It does support adding the nodes with method 'insert_node' and there is indeed a code to rebuild the tree if depths grows substantially. Basic usage can be found in the integration test, fragment copied below:
 ```
 let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
