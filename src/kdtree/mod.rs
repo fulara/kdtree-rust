@@ -129,7 +129,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
             self.nodes.pop();
         }
 
-        if self.node_depth_during_last_rebuild as f64 * 2.0 < depth as f64  {
+        if self.node_depth_during_last_rebuild as f64 * 1.5 < depth as f64  {
             self.gather_points_and_rebuild();
         }
     }
