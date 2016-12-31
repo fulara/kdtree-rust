@@ -7,6 +7,8 @@ mod bounds;
 use self::bounds::*;
 use self::distance::*;
 
+use std::cmp;
+
 pub trait KdtreePointTrait: Copy + PartialEq {
     fn dims(&self) -> &[f64];
 }
@@ -14,7 +16,9 @@ pub trait KdtreePointTrait: Copy + PartialEq {
 pub struct Kdtree<KdtreePoint> {
     nodes: Vec<KdtreeNode<KdtreePoint>>,
 
-    node_adding_dimension: usize
+    node_adding_dimension: usize,
+    node_depth_during_last_rebuild: usize,
+    current_node_depth: usize,
 }
 
 impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
@@ -23,16 +27,36 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
             panic!("empty vector point not allowed");
         }
 
-        let rect = Bounds::new_from_points(points);
+
 
         let mut tree = Kdtree {
             nodes: vec![],
             node_adding_dimension: 0,
+            node_depth_during_last_rebuild: 0,
+            current_node_depth: 0,
         };
 
-        tree.build_tree(&mut points, &rect);
+        tree.rebuild_tree(&mut points);
 
         tree
+    }
+
+    pub fn rebuild_tree(&mut self, points : &mut [KdtreePoint]) {
+        self.nodes.clear();
+
+        self.node_depth_during_last_rebuild = 0;
+        self.current_node_depth = 0;
+
+        let rect = Bounds::new_from_points(points);
+        self.build_tree(points, &rect, 1);
+    }
+
+    /// Can be used if you are sure that the tree is degenerated or if you will never again insert the nodes into the tree.
+    pub fn gather_points_and_rebuild(&mut self) {
+        let mut points : Vec<KdtreePoint> = vec![];
+        let nodes = self.gather_points(0,&mut points);
+
+        self.rebuild_tree(&mut points);
     }
 
     pub fn nearest_search(&self, node: &KdtreePoint) -> KdtreePoint
@@ -58,8 +82,10 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         self.node_adding_dimension = ( dimension + 1) % node_to_add.dims().len();
         let mut should_pop_node = false;
 
+        let mut depth = 0;
         loop {
 
+            depth +=1 ;
             let current_node = &mut self.nodes[current_index];
 
             if node_to_add.dims()[current_node.dimension] <= current_node.split_on {
@@ -89,6 +115,10 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
 
         if should_pop_node {
             self.nodes.pop();
+        }
+
+        if self.node_depth_during_last_rebuild as f64 * 4.0 < depth as f64  {
+            self.gather_points_and_rebuild();
         }
     }
 
@@ -130,7 +160,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         self.nodes.len() - 1
     }
 
-    fn build_tree(&mut self, nodes: &mut [KdtreePoint], bounds: &Bounds) -> usize {
+    fn build_tree(&mut self, nodes: &mut [KdtreePoint], bounds: &Bounds, depth : usize) -> usize {
         let (splitting_index, pivot_value) = partition::partition_sliding_midpoint(nodes, bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
 
         let node_id = self.add_node(nodes[splitting_index], bounds.get_widest_dim(), pivot_value);
@@ -138,18 +168,31 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
 
         if splitting_index > 0 {
             let left_rect = bounds.clone_moving_max(pivot_value, bounds.get_widest_dim());
-            let left_child_id = self.build_tree(&mut nodes[0..splitting_index], &left_rect);
+            let left_child_id = self.build_tree(&mut nodes[0..splitting_index], &left_rect, depth+1);
             self.nodes[node_id].left_node = Some(left_child_id);
         }
 
         if splitting_index < nodes.len() - 1 {
             let right_rect = bounds.clone_moving_min(pivot_value, bounds.get_widest_dim());
 
-            let right_child_id = self.build_tree(&mut nodes[splitting_index + 1..nodes_len], &right_rect);
+            let right_child_id = self.build_tree(&mut nodes[splitting_index + 1..nodes_len], &right_rect, depth+1);
             self.nodes[node_id].right_node = Some(right_child_id);
         }
 
+        self.node_depth_during_last_rebuild =  cmp::max(self.node_depth_during_last_rebuild,depth);
+
         node_id
+    }
+
+    fn gather_points(&self, current_index: usize, points : &mut Vec<KdtreePoint>){
+        points.push(self.nodes[current_index].point);
+        if let Some(left_index) = self.nodes[current_index].left_node {
+            self.gather_points(left_index, points);
+        }
+
+        if let Some(right_index) = self.nodes[current_index].right_node {
+            self.gather_points(right_index, points);
+        }
     }
 }
 
@@ -254,6 +297,8 @@ mod tests {
 
     #[test]
     fn incremental_add_adds_as_expected() {
+        //this test is tricky because it can have problems with the automatic tree rebuild.
+
         let mut vec = vec![Point2WithId::new(0,0.,0.)];
 
         let mut tree = Kdtree::new(&mut vec);

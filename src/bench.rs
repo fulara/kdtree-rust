@@ -40,6 +40,7 @@ fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
     b.iter(|| tree.nearest_search(&points[0]));
 }
 
+#[allow(dead_code)]
 fn bench_creating_1000_000_node_tree(b: &mut Bencher) {
     let len = 1000_000usize;
     let points = generate_points(len);
@@ -60,7 +61,17 @@ fn bench_adding_same_node_to_1000_tree(b: &mut Bencher) {
     });
 }
 
+fn bench_incrementally_building_the_1000_tree(b: &mut Bencher) {
+    b.iter(|| {
+        let len = 1usize;
+        let mut points = generate_points(len);
+        let mut tree = kdtree::kdtree::Kdtree::new(&mut points);
+        for _ in 0 .. 1000 {
+            let point = Point3WithId::new(-1 as i32, gen_random(), gen_random(), gen_random());
+            tree.insert_node(point);
+        }
+    });
+}
 
-
-benchmark_group!(benches, bench_creating_1000_node_tree, bench_single_loop_times_for_1000_node_tree,bench_adding_same_node_to_1000_tree);
+benchmark_group!(benches, bench_creating_1000_node_tree, bench_single_loop_times_for_1000_node_tree,bench_adding_same_node_to_1000_tree,bench_incrementally_building_the_1000_tree);
 benchmark_main!(benches);
