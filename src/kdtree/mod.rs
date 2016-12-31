@@ -78,6 +78,14 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         squared_euclidean(&self.nearest_search(node).dims(), node.dims())
     }
 
+    pub fn insert_nodes_and_rebuild(&mut self, nodes_to_add : &mut [KdtreePoint]) {
+        let mut pts : Vec<KdtreePoint> = vec![];
+        self.gather_points(0, &mut pts);
+        pts.extend(nodes_to_add.iter());
+
+        self.rebuild_tree(&mut pts);
+    }
+
     pub fn insert_node(&mut self, node_to_add : KdtreePoint) {
 
         let mut current_index = 0;
