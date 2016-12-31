@@ -54,7 +54,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
     /// Can be used if you are sure that the tree is degenerated or if you will never again insert the nodes into the tree.
     pub fn gather_points_and_rebuild(&mut self) {
         let mut points : Vec<KdtreePoint> = vec![];
-        let nodes = self.gather_points(0,&mut points);
+        self.gather_points(0,&mut points);
 
         self.rebuild_tree(&mut points);
     }

@@ -10,10 +10,6 @@ fn gen_random() -> f64 {
     rand::thread_rng().gen_range(0., 10000.)
 }
 
-fn gen_random_usize( max_value : usize) -> usize {
-    rand::thread_rng().gen_range(0usize, max_value)
-}
-
 fn find_nn_with_linear_search<'a>(points : &'a Vec<Point3WithId>, find_for : Point3WithId) -> &Point3WithId {
     let distance_fun = kdtree::kdtree::distance::squared_euclidean;
 
