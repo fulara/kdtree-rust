@@ -39,7 +39,9 @@ for i in 0 .. point_count {
     assert_eq!(p.id, tree.nearest_search(p).id );
 }
 ```
+Although not recommended for the kd-tree you can use the `insert_node` and `insert_nodes_and_rebuild` functions to add nodes to the tree. `insert_node` does silly check to check whether the tree should be rebuilt. `insert_nodes_and_rebuild` Automatically rebuilds the tree.  
 
+for now the removal of the nodes is not supported.
 
 ##Benchmark
 `cargo bench` using travis :)
