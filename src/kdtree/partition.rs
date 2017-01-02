@@ -8,7 +8,6 @@ enum PointsWereOnSide {
 
 struct PartitionPointHelper {
     points_were_on_side: PointsWereOnSide,
-    midpoint_split_value: f64,
     index_of_splitter: usize,
 }
 
@@ -40,23 +39,21 @@ fn partition_sliding_midpoint_helper<T: KdtreePointTrait>(vec: &mut [T], midpoin
     if has_points_on_sides != HAS_POINTS_ON_BOTH_SIDES {
         return PartitionPointHelper {
             index_of_splitter: closest_index,
-            midpoint_split_value: vec.get(closest_index).unwrap().dims()[partition_on_dimension],
             points_were_on_side: if has_points_on_sides == HAS_POINTS_ON_LEFT_SIDE { PointsWereOnSide::Left } else { PointsWereOnSide::Right }
         }
     }
     return PartitionPointHelper {
         index_of_splitter: closest_index,
-        midpoint_split_value: midpoint_value,
         points_were_on_side: PointsWereOnSide::Both
     }
 }
 
-pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut [T], midpoint_value: f64, partition_on_dimension: usize) -> (usize, f64) {
+pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut [T], midpoint_value: f64, partition_on_dimension: usize) -> usize {
     let vec_len = vec.len();
     debug_assert!(vec[0].dims().len() > partition_on_dimension);
 
     if vec.len() == 1 {
-        return (0, vec[0].dims()[partition_on_dimension]);
+        return 0;
     }
 
     let partition_point_data = partition_sliding_midpoint_helper(vec, midpoint_value, partition_on_dimension);
@@ -64,15 +61,15 @@ pub fn partition_sliding_midpoint<T: KdtreePointTrait>(vec: &mut [T], midpoint_v
     match partition_point_data.points_were_on_side {
         PointsWereOnSide::Left => {
             vec.swap(partition_point_data.index_of_splitter, vec_len - 1);
-            (vec_len - 1, partition_point_data.midpoint_split_value)
+            vec_len - 1
         },
         PointsWereOnSide::Right => {
             vec.swap(partition_point_data.index_of_splitter, 0);
-            (0, partition_point_data.midpoint_split_value)
+            0
         }
         PointsWereOnSide::Both => {
             let index_of_splitting_point = partition_kdtree(vec, partition_point_data.index_of_splitter, partition_on_dimension);
-            (index_of_splitting_point, partition_point_data.midpoint_split_value)
+            index_of_splitting_point
         }
     }
 }
@@ -129,7 +126,7 @@ fn partition_kdtree<T: KdtreePointTrait>(vec: &mut [T], index_of_splitting_point
 #[cfg(test)]
 mod tests {
     use ::kdtree::*;
-    use ::kdtree::test_common::tests_utils::*;
+    use ::kdtree::test_common::*;
 
     use ::rand::distributions::{IndependentSample, Range};
     use ::rand::*;
@@ -186,18 +183,16 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn partition_given_midpoint_exactly_in_between_points_returns_smaller_index() {
         let p1 = Point2WithId::new(1, 2., 4.);
         let p2 = Point2WithId::new(1, 4., 6.);
         let mut vec = vec![p1, p2];
 
-        assert_eq! ((0, 3.), partition_sliding_midpoint(&mut vec, 3., 0));
-        assert_eq! ((0, 5.), partition_sliding_midpoint(&mut vec, 5., 1));
+        assert_eq! (0, partition_sliding_midpoint(&mut vec, 3., 0));
+        assert_eq! (0, partition_sliding_midpoint(&mut vec, 5., 1));
     }
 
     #[test]
-    #[ignore]
     fn partition_given_midpoint_which_has_all_points_on_one_side_slides_split_plane_and_returns_index_to_closest_element() {
         let p1 = Point2WithId::new(1, 2., 4.);
         let p2 = Point2WithId::new(2, 4., 6.);
@@ -205,32 +200,32 @@ mod tests {
         let p4 = Point2WithId::new(4, 0., 8.);
         let mut vec = vec![p1, p2, p3];
 
-        assert_eq! ((0, 2.), partition_sliding_midpoint(&mut vec, 1.9, 0));
+        assert_eq! (0, partition_sliding_midpoint(&mut vec, 1.9, 0));
         assert_eq! (1, vec[0].id);
         assert_eq! (2, vec[1].id);
         assert_eq! (3, vec[2].id);
 
         let mut vec = vec![p1, p2, p3];
-        assert_eq! ((0, 2.), partition_sliding_midpoint(&mut vec, -5000., 0));
+        assert_eq! (0, partition_sliding_midpoint(&mut vec, -5000., 0));
         assert_eq! (1, vec[0].id);
         assert_eq! (2, vec[1].id);
         assert_eq! (3, vec[2].id);
 
         let mut vec = vec![p1, p2, p3];
-        assert_eq! ((2, 4.), partition_sliding_midpoint(&mut vec, 10., 0));
+        assert_eq! (2, partition_sliding_midpoint(&mut vec, 10., 0));
         assert_eq! (1, vec[0].id);
         assert_eq! (3, vec[1].id);
         assert_eq! (2, vec[2].id);
 
 
         let mut vec = vec![p1, p2, p3];
-        assert_eq! ((2, 7.), partition_sliding_midpoint(&mut vec, 10., 1));
+        assert_eq! (2, partition_sliding_midpoint(&mut vec, 10., 1));
         assert_eq! (1, vec[0].id);
         assert_eq! (2, vec[1].id);
         assert_eq! (3, vec[2].id);
 
         let mut vec = vec![p1, p2, p3, p4];
-        assert_eq! ((0, 0.), partition_sliding_midpoint(&mut vec, -5000., 0));
+        assert_eq! (0, partition_sliding_midpoint(&mut vec, -5000., 0));
         assert_eq! (4, vec[0].id);
         assert_eq! (2, vec[1].id);
         assert_eq! (3, vec[2].id);

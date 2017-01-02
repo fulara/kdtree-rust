@@ -1,6 +1,4 @@
-#[cfg(test)]
 pub mod test_common;
-
 pub mod distance;
 
 mod partition;
@@ -9,32 +7,59 @@ mod bounds;
 use self::bounds::*;
 use self::distance::*;
 
-pub trait KdtreePointTrait: Copy {
+use std::cmp;
+
+pub trait KdtreePointTrait: Copy + PartialEq {
     fn dims(&self) -> &[f64];
 }
 
-pub struct Kdtree<T> {
-    nodes: Vec<KdtreeNode<T>>,
+pub struct Kdtree<KdtreePoint> {
+    nodes: Vec<KdtreeNode<KdtreePoint>>,
+
+    node_adding_dimension: usize,
+    node_depth_during_last_rebuild: usize,
+    current_node_depth: usize,
 }
 
-impl<T: KdtreePointTrait> Kdtree<T> {
-    pub fn new(mut points: &mut [T]) -> Kdtree<T> {
+impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
+    pub fn new(mut points: &mut [KdtreePoint]) -> Kdtree<KdtreePoint> {
         if points.len() == 0 {
             panic!("empty vector point not allowed");
         }
 
-        let rect = Bounds::new_from_points(points);
+
 
         let mut tree = Kdtree {
             nodes: vec![],
+            node_adding_dimension: 0,
+            node_depth_during_last_rebuild: 0,
+            current_node_depth: 0,
         };
 
-        tree.build_tree(&mut points, &rect);
+        tree.rebuild_tree(&mut points);
 
         tree
     }
 
-    pub fn nearest_search(&self, node: &T) -> T
+    pub fn rebuild_tree(&mut self, points : &mut [KdtreePoint]) {
+        self.nodes.clear();
+
+        self.node_depth_during_last_rebuild = 0;
+        self.current_node_depth = 0;
+
+        let rect = Bounds::new_from_points(points);
+        self.build_tree(points, &rect, 1);
+    }
+
+    /// Can be used if you are sure that the tree is degenerated or if you will never again insert the nodes into the tree.
+    pub fn gather_points_and_rebuild(&mut self) {
+        let mut points : Vec<KdtreePoint> = vec![];
+        self.gather_points(0,&mut points);
+
+        self.rebuild_tree(&mut points);
+    }
+
+    pub fn nearest_search(&self, node: &KdtreePoint) -> KdtreePoint
     {
         let mut nearest_neighbor = 0usize;
         let mut best_distance = squared_euclidean(node.dims(), &self.nodes[0].point.dims());
@@ -43,15 +68,79 @@ impl<T: KdtreePointTrait> Kdtree<T> {
         self.nodes[nearest_neighbor].point
     }
 
-    fn nearest_search_impl(&self, p: &T, searched_index: usize, best_distance_squared: &mut f64, best_leaf_found: &mut usize) {
+    pub fn has_neighbor_in_range(&self, node: &KdtreePoint, range: f64) -> bool {
+        let squared_range = range * range;
+
+        self.distance_squared_to_nearest(node) <= squared_range
+    }
+
+    pub fn distance_squared_to_nearest(&self, node: &KdtreePoint) -> f64 {
+        squared_euclidean(&self.nearest_search(node).dims(), node.dims())
+    }
+
+    pub fn insert_nodes_and_rebuild(&mut self, nodes_to_add : &mut [KdtreePoint]) {
+        let mut pts : Vec<KdtreePoint> = vec![];
+        self.gather_points(0, &mut pts);
+        pts.extend(nodes_to_add.iter());
+
+        self.rebuild_tree(&mut pts);
+    }
+
+    pub fn insert_node(&mut self, node_to_add : KdtreePoint) {
+
+        let mut current_index = 0;
+        let dimension = self.node_adding_dimension;
+        let index_of_new_node = self.add_node(node_to_add,dimension,node_to_add.dims()[dimension]);
+        self.node_adding_dimension = ( dimension + 1) % node_to_add.dims().len();
+        let mut should_pop_node = false;
+
+        let mut depth = 0;
+        loop {
+
+            depth +=1 ;
+            let current_node = &mut self.nodes[current_index];
+
+            if node_to_add.dims()[current_node.dimension] <= current_node.split_on {
+                if let Some(left_node_index) = current_node.left_node {
+                    current_index = left_node_index
+                } else {
+                    if current_node.point.eq(&node_to_add) {
+                        should_pop_node = true;
+                    } else {
+                        current_node.left_node = Some(index_of_new_node);
+                    }
+                    break;
+                }
+            } else {
+                if let Some(right_node_index) = current_node.right_node {
+                    current_index = right_node_index
+                } else {
+                    if current_node.point.eq(&node_to_add) {
+                        should_pop_node = true;
+                    } else {
+                        current_node.right_node = Some(index_of_new_node);
+                    }
+                    break;
+                }
+            }
+        }
+
+        if should_pop_node {
+            self.nodes.pop();
+        }
+
+        if self.node_depth_during_last_rebuild as f64 * 4.0 < depth as f64  {
+            self.gather_points_and_rebuild();
+        }
+    }
+
+    fn nearest_search_impl(&self, p: &KdtreePoint, searched_index: usize, best_distance_squared: &mut f64, best_leaf_found: &mut usize) {
         let node = &self.nodes[searched_index];
 
-        let dimension = node.dimension;
         let splitting_value = node.split_on;
-        let point_splitting_dim_value = p.dims()[dimension];
+        let point_splitting_dim_value = p.dims()[node.dimension];
 
-        let (closer_node, farther_node) =
-        if point_splitting_dim_value <= splitting_value {
+        let (closer_node, farther_node) = if point_splitting_dim_value <= splitting_value {
             (node.left_node, node.right_node)
         } else {
             (node.right_node, node.left_node)
@@ -76,34 +165,47 @@ impl<T: KdtreePointTrait> Kdtree<T> {
         }
     }
 
-
-    fn add_node(&mut self, p: T, dimension: usize, split_on: f64) -> usize {
+    fn add_node(&mut self, p: KdtreePoint, dimension: usize, split_on: f64) -> usize {
         let node = KdtreeNode::new(p, dimension, split_on);
 
         self.nodes.push(node);
         self.nodes.len() - 1
     }
 
-    fn build_tree(&mut self, nodes: &mut [T], bounds: &Bounds) -> usize {
-        let (splitting_index, pivot_value) = partition::partition_sliding_midpoint(nodes, bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
+    fn build_tree(&mut self, nodes: &mut [KdtreePoint], bounds: &Bounds, depth : usize) -> usize {
+        let splitting_index = partition::partition_sliding_midpoint(nodes, bounds.get_midvalue_of_widest_dim(), bounds.get_widest_dim());
+        let pivot_value = nodes[splitting_index].dims()[bounds.get_widest_dim()];
 
-        let node_id = self.add_node(nodes[splitting_index], bounds.get_widest_dim(), bounds.get_midvalue_of_widest_dim());
+        let node_id = self.add_node(nodes[splitting_index], bounds.get_widest_dim(), pivot_value);
         let nodes_len = nodes.len();
 
         if splitting_index > 0 {
             let left_rect = bounds.clone_moving_max(pivot_value, bounds.get_widest_dim());
-            let left_child_id = self.build_tree(&mut nodes[0..splitting_index], &left_rect);
+            let left_child_id = self.build_tree(&mut nodes[0..splitting_index], &left_rect, depth+1);
             self.nodes[node_id].left_node = Some(left_child_id);
         }
 
         if splitting_index < nodes.len() - 1 {
             let right_rect = bounds.clone_moving_min(pivot_value, bounds.get_widest_dim());
 
-            let right_child_id = self.build_tree(&mut nodes[splitting_index + 1..nodes_len], &right_rect);
+            let right_child_id = self.build_tree(&mut nodes[splitting_index + 1..nodes_len], &right_rect, depth+1);
             self.nodes[node_id].right_node = Some(right_child_id);
         }
 
+        self.node_depth_during_last_rebuild =  cmp::max(self.node_depth_during_last_rebuild,depth);
+
         node_id
+    }
+
+    fn gather_points(&self, current_index: usize, points : &mut Vec<KdtreePoint>){
+        points.push(self.nodes[current_index].point);
+        if let Some(left_index) = self.nodes[current_index].left_node {
+            self.gather_points(left_index, points);
+        }
+
+        if let Some(right_index) = self.nodes[current_index].right_node {
+            self.gather_points(right_index, points);
+        }
     }
 }
 
@@ -131,7 +233,7 @@ impl<T: KdtreePointTrait> KdtreeNode<T> {
 
 #[cfg(test)]
 mod tests {
-    use ::kdtree::test_common::tests_utils::Point2WithId;
+    use ::kdtree::test_common::Point2WithId;
 
     use super::*;
 
@@ -192,6 +294,52 @@ mod tests {
 
             true
         }
+    }
+
+    #[test]
+    fn has_neighbor_in_range() {
+        let mut vec: Vec<Point2WithId> = vec![Point2WithId::new(0,2.,0.)];
+
+        let tree = Kdtree::new(&mut vec);
+
+        assert_eq!(false,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 0.));
+        assert_eq!(false,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 1.));
+        assert_eq!(true,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 2.));
+        assert_eq!(true,tree.has_neighbor_in_range(&Point2WithId::new(0,0.,0.), 300.));
+    }
+
+    #[test]
+    fn incremental_add_adds_as_expected() {
+        //this test is tricky because it can have problems with the automatic tree rebuild.
+
+        let mut vec = vec![Point2WithId::new(0,0.,0.)];
+
+        let mut tree = Kdtree::new(&mut vec);
+
+        tree.insert_node(Point2WithId::new(0,1.,0.));
+        tree.insert_node(Point2WithId::new(0,-1.,0.));
+
+        assert_eq!(tree.nodes.len(), 3);
+        assert_eq!(tree.nodes[0].dimension, 0);
+
+        assert_eq!(tree.nodes[0].left_node.is_some(), true);
+        assert_eq!(tree.nodes[1].point.dims()[0], 1.);
+        assert_eq!(tree.nodes[2].point.dims()[0], -1.);
+
+        assert_eq!(tree.nodes[0].right_node.is_some(), true);
+    }
+
+    #[test]
+    fn incremental_add_filters_duplicates() {
+        let mut vec = vec![Point2WithId::new(0,0.,0.)];
+
+        let mut tree = Kdtree::new(&mut vec);
+
+        let node = Point2WithId::new(0,1.,0.);
+        tree.insert_node(node);
+        tree.insert_node(node);
+
+        assert_eq!(tree.nodes.len(), 2);
     }
 
     fn qc_value_vec_to_2d_points_vec(xs: &Vec<f64>) -> Vec<Point2WithId> {

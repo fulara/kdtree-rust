@@ -1,7 +1,8 @@
-# kdtree-rust [![Build Status](https://travis-ci.org/fulara/kdtree-rust.svg?branch=develop)](https://travis-ci.org/fulara/kdtree-rust)
+# kdtree-rust [![Build Status](https://travis-ci.org/fulara/kdtree-rust.svg?branch=develop)](https://travis-ci.org/fulara/kdtree-rust) [![Build Status](https://img.shields.io/crates/v/fux_kdtree.svg?branch=develop)](https://crates.io/crates/fux_kdtree)
 kdtree implementation for rust.
 
-Implementation uses sliding midpoint variation of the tree. [More Info here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.74.210&rep=rep1&type=pdf)
+Implementation uses sliding midpoint variation of the tree. [More Info here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.74.210&rep=rep1&type=pdf) 
+Implementation uses single `Vec<Node>` to store all its contents, allowing for quick access, and no memory fragmentation.
 
 ###Usage
 Tree can only be used with types implementing trait:
@@ -11,7 +12,7 @@ pub trait KdtreePointTrait : Copy  {
 }
 ```
 
-Thanks to this trait you can use any dimension. Keep in mind that the tree currently only supports up to 3D.  
+Thanks to this trait you can use any dimension. Keep in mind that the tree currently only supports up to 3D [#2](/../../issues/2).  
 Examplary implementation would be:
 ```
 pub struct Point3WithId {
@@ -20,13 +21,14 @@ pub struct Point3WithId {
 }
 
 impl KdtreePointTrait for Point3WithId {
+    #[inline] // the inline on this method is important! as without it there is ~25% speed loss on the tree when cross-crate usage.
     fn dims(&self) -> &[f64] {
         return &self.dims;
     }
 }
 ```
 Where id is just a example of the way in which I carry the data.  
-With that trait implemented you are good to go to use the tree. Keep in mind that the kdtree is not a self balancing tree, so it should not support continous add. right now the tree just handles the build up from Vec. Basic usage can be found in the integration test, fragment copied below:
+With that trait implemented you are good to go to use the tree. Keep in mind that the kdtree is not a self balancing tree, It does support adding the nodes with method 'insert_node' and there is indeed a code to rebuild the tree if depths grows substantially. Basic usage can be found in the integration test, fragment copied below:
 ```
 let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
@@ -37,16 +39,19 @@ for i in 0 .. point_count {
     assert_eq!(p.id, tree.nearest_search(p).id );
 }
 ```
+Although not recommended for the kd-tree you can use the `insert_node` and `insert_nodes_and_rebuild` functions to add nodes to the tree. `insert_node` does silly check to check whether the tree should be rebuilt. `insert_nodes_and_rebuild` Automatically rebuilds the tree.  
 
+for now the removal of the nodes is not supported.
 
 ##Benchmark
 `cargo bench` using travis :)
 ```
 running 3 tests
 test bench_creating_1000_000_node_tree          ... bench: 275,155,622 ns/iter (+/- 32,713,321)
-test bench_creating_1000_node_tree              ... bench:     121,314 ns/iter (+/- 1,977)
-test bench_single_loop_times_for_1000_node_tree ... bench:         162 ns/iter (+/- 76)
-test result: ok. 0 passed; 0 failed; 0 ignored; 3 measured
+test bench_adding_same_node_to_1000_tree        ... bench:          42 ns/iter (+/- 11)
+test bench_creating_1000_node_tree              ... bench:     120,310 ns/iter (+/- 4,746)
+test bench_single_lookup_times_for_1000_node_tree ... bench:         164 ns/iter (+/- 139)
+test result: ok. 0 passed; 0 failed; 0 ignored; 4 measured
 ```
 
 ~275ms to create a 1000_000 node tree. << this bench is now disabled.  
