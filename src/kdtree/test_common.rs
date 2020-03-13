@@ -52,10 +52,7 @@ pub struct Point1WithId {
 
 impl Point1WithId {
     pub fn new(id: i32, x: f64) -> Point1WithId {
-        Point1WithId {
-            dims: [x],
-            id: id,
-        }
+        Point1WithId { dims: [x], id: id }
     }
 }
 
