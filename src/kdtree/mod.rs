@@ -8,6 +8,7 @@ use self::bounds::*;
 use self::distance::*;
 
 use std::cmp;
+use std::collections::BTreeSet;
 
 pub trait KdtreePointTrait: Copy + PartialEq {
     fn dims(&self) -> &[f64];
@@ -63,6 +64,31 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         self.nearest_search_impl(node, 0usize, &mut best_distance, &mut nearest_neighbor);
 
         self.nodes[nearest_neighbor].point
+    }
+
+    pub fn within<F>(
+        &self,
+        node: &KdtreePoint,
+        search_radius: f64,
+        distance_function: F,
+    ) -> Vec<KdtreePoint>
+    where
+        F: Fn(&[f64], &[f64]) -> f64,
+    {
+        let mut nearest = BTreeSet::<usize>::new();
+        let mut nearest_neighbor = 0usize;
+        let mut best_distance = distance_function(node.dims(), &self.nodes[0].point.dims());
+        self.within_nearest_search_impl(
+            node,
+            0usize,
+            &mut best_distance,
+            &mut nearest_neighbor,
+            &mut nearest,
+            search_radius,
+            &distance_function,
+        );
+
+        nearest.into_iter().map(|x| self.nodes[x].point).collect()
     }
 
     pub fn has_neighbor_in_range(&self, node: &KdtreePoint, range: f64) -> bool {
@@ -164,6 +190,73 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
 
             if distance_on_single_dimension <= *best_distance_squared {
                 self.nearest_search_impl(p, farther_node, best_distance_squared, best_leaf_found);
+            }
+        }
+    }
+
+    // Recurisvely checks the leaves of the head node until the best node is found
+    // Logs the nodes that satisfy the search radius until the best node is found
+    fn within_nearest_search_impl<F>(
+        &self,
+        p: &KdtreePoint,
+        searched_index: usize,
+        best_distance_squared: &mut f64,
+        best_leaf_found: &mut usize,
+        within_nodes: &mut BTreeSet<usize>,
+        search_radius: f64,
+        distance_function: &F,
+    ) where
+        F: Fn(&[f64], &[f64]) -> f64,
+    {
+        let node = &self.nodes[searched_index];
+
+        let splitting_value = node.split_on;
+        let point_splitting_dim_value = p.dims()[node.dimension];
+
+        let (closer_node, farther_node) = if point_splitting_dim_value <= splitting_value {
+            (node.left_node, node.right_node)
+        } else {
+            (node.right_node, node.left_node)
+        };
+
+        // Check the children of the closer node
+        if let Some(closer_node) = closer_node {
+            self.within_nearest_search_impl(
+                p,
+                closer_node,
+                best_distance_squared,
+                best_leaf_found,
+                within_nodes,
+                search_radius,
+                distance_function,
+            );
+        }
+
+        let distance = distance_function(p.dims(), node.point.dims());
+        if distance <= search_radius {
+            within_nodes.insert(searched_index);
+        }
+        if distance < *best_distance_squared {
+            *best_distance_squared = distance;
+            *best_leaf_found = searched_index;
+        }
+
+        // If there's a farther node, check that one too just in case
+        if let Some(farther_node) = farther_node {
+            let distance_on_single_dimension =
+                distance_function(&[splitting_value], &[point_splitting_dim_value]);
+
+            // if distance_on_single_dimension <= *best_distance_squared  {
+            if distance_on_single_dimension <= search_radius {
+                self.within_nearest_search_impl(
+                    p,
+                    farther_node,
+                    best_distance_squared,
+                    best_leaf_found,
+                    within_nodes,
+                    search_radius,
+                    distance_function,
+                );
             }
         }
     }

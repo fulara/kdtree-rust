@@ -6,6 +6,7 @@ extern crate rand;
 use bencher::Bencher;
 use rand::Rng;
 
+use kdtree::kdtree::distance::squared_euclidean;
 use kdtree::kdtree::test_common::*;
 
 fn gen_random() -> f64 {
@@ -43,6 +44,15 @@ fn bench_single_loop_times_for_1000_node_tree(b: &mut Bencher) {
     let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
     b.iter(|| tree.nearest_search(&points[0]));
+}
+
+fn bench_single_loop_times_for_1000_node_tree_within(b: &mut Bencher) {
+    let len = 1000usize;
+    let points = generate_points(len);
+
+    let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
+
+    b.iter(|| tree.within(&points[0], 5000.0, squared_euclidean));
 }
 
 #[allow(dead_code)]
