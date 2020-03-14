@@ -4,7 +4,7 @@ kdtree implementation for rust.
 Implementation uses sliding midpoint variation of the tree. [More Info here](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.74.210&rep=rep1&type=pdf) 
 Implementation uses single `Vec<Node>` to store all its contents, allowing for quick access, and no memory fragmentation.
 
-###Usage
+### Usage
 Tree can only be used with types implementing trait:
 ```
 pub trait KdtreePointTrait : Copy  {
@@ -43,7 +43,7 @@ Although not recommended for the kd-tree you can use the `insert_node` and `inse
 
 for now the removal of the nodes is not supported.
 
-##Benchmark
+## Benchmark
 `cargo bench` using travis :)
 ```
 running 3 tests
@@ -58,7 +58,7 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 4 measured
 ~120us to create a 1000 node tree.  
 160ns to query the tree.  
 
-###Benchmark - comparison with CGAL.
+### Benchmark - comparison with CGAL.
 Since raw values arent saying much I've created the benchmark comparing this implementation against CGAL. code of the benchmark is available here: https://github.com/fulara/kdtree-benchmarks
 ```
 Benchmark                           Time           CPU Iterations
@@ -90,5 +90,5 @@ Rust_tree_lookup/976.562k         442 ns        441 ns    1636130
 ```  
 Rust_tree_lookup has some overhead since the libraries are being invoked from C code into Rust, and there is minor overhead of that in between, my experience indicates around 50 ns overhead.
 
-##License
+## License
 The Unlicense
