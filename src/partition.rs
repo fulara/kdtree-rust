@@ -145,10 +145,10 @@ fn partition_kdtree<T: KdtreePointTrait>(
 
 #[cfg(test)]
 mod tests {
-    use kdtree::test_common::*;
+    use crate::test_common::*;
     use kdtree::*;
 
-    use rand::distributions::{IndependentSample, Range};
+    // use rand::distributions::Range;
     use rand::*;
 
     use super::partition_kdtree;
@@ -186,11 +186,10 @@ mod tests {
             if xs.len() == 0 {
                 return true;
             }
-            let between = Range::new(0, xs.len());
-            let mut rng = thread_rng();
+            let mut rng = rand::thread_rng();
 
             for _ in 0 .. 5 {
-                let random_splitting_index = between.ind_sample(&mut rng);
+                let random_splitting_index = rng.gen_range(0, xs.len());
 
                 let mut vec = vec.clone();
 

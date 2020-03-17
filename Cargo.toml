@@ -19,5 +19,6 @@ harness = false
 
 [dev-dependencies]
 quickcheck = "~0.3"
-rand = "~0.3.12"
+rand = "~0.7.3"
 bencher = "~0.1.2"
+criterion = "0.3.1"
