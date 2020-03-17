@@ -1,3 +1,12 @@
+pub fn euclidean(a: &[f64], b: &[f64]) -> f64 {
+    debug_assert!(a.len() == b.len());
+    a.iter()
+        .zip(b.iter())
+        .map(|(x1, x2)| (*x1 - *x2).powi(2))
+        .fold(0f64, |acc, add| acc + add)
+        .sqrt()
+}
+
 pub fn squared_euclidean(a: &[f64], b: &[f64]) -> f64 {
     debug_assert!(a.len() == b.len());
 
