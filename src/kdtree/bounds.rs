@@ -1,4 +1,4 @@
-use ::kdtree::*;
+use kdtree::*;
 
 pub struct Bounds {
     pub bounds: [(f64, f64); 3],
@@ -82,22 +82,21 @@ impl Bounds {
 
     fn calculate_variables(&mut self) {
         self.calculate_widest_dim();
-        self.midvalue_of_widest_dim = (self.bounds[self.get_widest_dim()].0 + self.bounds[self.get_widest_dim()].1) / 2.0;
+        self.midvalue_of_widest_dim =
+            (self.bounds[self.get_widest_dim()].0 + self.bounds[self.get_widest_dim()].1) / 2.0;
     }
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::kdtree::test_common::*;
+    use kdtree::test_common::*;
 
     #[test]
     fn bounds_test() {
         let p1 = Point2WithId::new(1, 1.0, 0.5);
         let p2 = Point2WithId::new(1, 3.0, 4.0);
         let v = vec![p1, p2];
-
 
         let bounds = Bounds::new_from_points(&v);
 
