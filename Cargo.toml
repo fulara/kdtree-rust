@@ -18,7 +18,7 @@ name = "bench"
 harness = false
 
 [dev-dependencies]
-quickcheck = "~0.3"
-rand = "~0.7.3"
-bencher = "~0.1.2"
+quickcheck = "0.9"
+rand = "0.7"
+#bencher = "~0.1.2"
 criterion = "0.3.1"

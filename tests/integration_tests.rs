@@ -121,7 +121,7 @@ fn test_within_1000_random_points() {
 
         // Linear mapping of points
         for i in 0..point_count {
-            let found_points = mykdtree.within(&p, (i * i) as f64 + 0.1, squared_euclidean);
+            let found_points = mykdtree.within(&p, (i * i) as f64 + 0.1, &squared_euclidean);
             assert_eq!(found_points.len(), i + 1);
         }
     }
@@ -135,7 +135,7 @@ fn test_within_1000_random_points() {
 
         // flat diagonal mapping of points
         for i in 0..point_count {
-            let found_points = mykdtree.within(&p, i as f64 * 2.0f64.sqrt() + 0.1, euclidean);
+            let found_points = mykdtree.within(&p, i as f64 * 2.0f64.sqrt() + 0.1, &euclidean);
             assert_eq!(found_points.len(), i + 1);
         }
     }
@@ -149,7 +149,7 @@ fn test_within_1000_random_points() {
 
         // flat diagonal mapping of points
         for i in 0..point_count {
-            let found_points = mykdtree.within(&p, i as f64 * 3.0f64.sqrt() + 0.1, euclidean);
+            let found_points = mykdtree.within(&p, i as f64 * 3.0f64.sqrt() + 0.1, &euclidean);
             assert_eq!(found_points.len(), i + 1);
         }
     }

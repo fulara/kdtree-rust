@@ -1,6 +1,6 @@
 use kdtree::KdtreePointTrait;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct Point3WithId {
     dims: [f64; 3],
     pub id: i32,
@@ -22,7 +22,7 @@ impl KdtreePointTrait for Point3WithId {
     }
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Point2WithId {
     dims: [f64; 2],
     pub id: i32,
@@ -90,8 +90,8 @@ fn doc_test() {
     // Query the same point
     assert_eq!(tree.nearest_search(&a).id, a.id);
 
-    assert_eq!(tree.within(&a, 0.001, euclidean).len(), 1);
-    assert_eq!(tree.within(&a, 1.001, euclidean).len(), 2);
-    assert_eq!(tree.within(&a, 1.415, euclidean).len(), 3);
-    assert_eq!(tree.within(&a, 1.733, euclidean).len(), 4);
+    assert_eq!(tree.within(&a, 0.001, &euclidean).len(), 1);
+    assert_eq!(tree.within(&a, 1.001, &euclidean).len(), 2);
+    assert_eq!(tree.within(&a, 1.415, &euclidean).len(), 3);
+    assert_eq!(tree.within(&a, 1.733, &euclidean).len(), 4);
 }

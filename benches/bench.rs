@@ -81,7 +81,7 @@ fn bench_single_loop_times_for_1000_node_tree_within_1000(c: &mut Criterion) {
 
             let tree = kdtree::Kdtree::new(&mut points.clone());
 
-            b.iter(|| tree.within(&points[0], 1000.0, squared_euclidean))
+            b.iter(|| tree.within(&points[0], 1000.0, &squared_euclidean))
         },
     );
 }

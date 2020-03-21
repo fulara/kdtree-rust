@@ -65,8 +65,8 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         &self,
         node: &KdtreePoint,
         search_radius: f64,
-        distance_function: F,
-    ) -> Vec<KdtreePoint>
+        distance_function: &F,
+    ) -> Vec<&KdtreePoint>
     where
         F: Fn(&[f64], &[f64]) -> f64,
     {
@@ -83,7 +83,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
             &distance_function,
         );
 
-        nearest.into_iter().map(|x| self.nodes[x].point).collect()
+        nearest.into_iter().map(|x| &self.nodes[x].point).collect()
     }
 
     pub fn has_neighbor_in_range(&self, node: &KdtreePoint, range: f64) -> bool {
@@ -189,7 +189,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
         }
     }
 
-    // Recurisvely checks the leaves of the head node until the best node is found
+    // Recursively checks the leaves of the head node until the best node is found
     // Logs the nodes that satisfy the search radius until the best node is found
     fn within_nearest_search_impl<F>(
         &self,
@@ -333,9 +333,10 @@ impl<T: KdtreePointTrait> KdtreeNode<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::test_common::Point2WithId;
+    use crate::test_common::{Point2WithId, Point3WithId};
 
     use super::*;
+    use std::cmp::Ordering;
 
     #[test]
     #[should_panic(expected = "empty vector point not allowed")]
@@ -346,13 +347,13 @@ mod tests {
     }
 
     quickcheck! {
-        fn tree_build_creates_tree_with_as_many_leafs_as_there_is_points(xs : Vec<f64>) -> bool {
+        fn tree_build_creates_tree_with_as_many_leafs_as_there_is_points(xs : Vec<(f64, f64)>) -> bool {
             if xs.len() == 0 {
                 return true;
             }
             let mut vec : Vec<Point2WithId> = vec![];
             for i in 0 .. xs.len() {
-                let p = Point2WithId::new(i as i32, xs[i], xs[i]);
+                let p = Point2WithId::new(i as i32, xs[i].0, xs[i].1);
 
                 vec.push(p);
             }
@@ -378,7 +379,7 @@ mod tests {
     }
 
     quickcheck! {
-        fn nearest_neighbor_search_using_qc(xs : Vec<f64>) -> bool {
+        fn nearest_neighbor_search_using_qc(xs : Vec<(f64, f64)>) -> bool {
             if xs.len() == 0 {
                 return true;
             }
@@ -390,6 +391,57 @@ mod tests {
                 let found_nn = tree.nearest_search(p);
 
                 assert_eq!(p.id,found_nn.id);
+            }
+
+            true
+        }
+    }
+
+    quickcheck! {
+        fn tree_search_same_results_as_linear_3d(tree : Vec<(f64, f64, f64)>, search_points: Vec<(f64, f64, f64)>) -> bool {
+            if tree.len() == 0 {
+                return true;
+            }
+
+            let point_vec = qc_value_vec_to_3d_points_vec(&tree);
+            let search_points_vec = qc_value_vec_to_3d_points_vec(&search_points);
+            let tree = Kdtree::new(&mut point_vec.clone());
+
+
+            for storage in vec![&point_vec, &search_points_vec] {
+                let storage: &Vec<Point3WithId> = storage;
+                for p in storage {
+                    let tree_result = tree.nearest_search(p);
+                    let linear_result = linear_nn(&point_vec, p).clone();
+                    assert_eq!(tree_result,linear_result, "testing lookup of {:?} linear_result: {:?} tree_result: {:?}", p, linear_result, tree_result);
+                }
+            }
+
+            true
+        }
+    }
+
+    quickcheck! {
+        fn tree_within_same_results_as_linear_3d(tree : Vec<(f64, f64, f64)>, search_points: Vec<(f64, f64, f64)>, dist : f64) -> bool {
+            if tree.len() == 0 || dist < 0.0 {
+                return true;
+            }
+
+            let point_vec = qc_value_vec_to_3d_points_vec(&tree);
+            let search_points_vec = qc_value_vec_to_3d_points_vec(&search_points);
+            let tree = Kdtree::new(&mut point_vec.clone());
+
+
+            for storage in vec![&point_vec, &search_points_vec] {
+                let storage: &Vec<Point3WithId> = storage;
+                for p in storage {
+                    let mut tree_result = tree.within(p, dist, &euclidean);
+                    let mut linear_result = linear_within(&point_vec, p, dist, &euclidean).collect::<Vec<_>>();
+                    tree_result.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                    linear_result.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+                    assert_eq!(tree_result, linear_result);
+                }
             }
 
             true
@@ -454,7 +506,40 @@ mod tests {
         assert_eq!(tree.nodes.len(), 2);
     }
 
-    fn qc_value_vec_to_2d_points_vec(xs: &Vec<f64>) -> Vec<Point2WithId> {
+    fn linear_nn<'a, Point: KdtreePointTrait>(nodes: &'a Vec<Point>, node: &'a Point) -> &'a Point {
+        nodes
+            .iter()
+            .min_by(|x, y| {
+                let a = squared_euclidean(node.dims(), x.dims());
+                let b = squared_euclidean(node.dims(), y.dims());
+
+                if a < b {
+                    Ordering::Less
+                } else if (a == b) {
+                    Ordering::Equal
+                } else {
+                    Ordering::Greater
+                }
+            })
+            .unwrap()
+    }
+
+    fn linear_within<'a, Point: KdtreePointTrait, F>(
+        nodes: &'a [Point],
+        point: &'a Point,
+        dist: f64,
+        f: &F,
+    ) -> impl Iterator<Item = &'a Point>
+    where
+        F: Fn(&[f64], &[f64]) -> f64,
+    {
+        let point = point.clone();
+        nodes
+            .iter()
+            .filter(move |n| euclidean(n.dims(), point.dims()) <= dist)
+    }
+
+    fn qc_value_vec_to_2d_points_vec(xs: &Vec<(f64, f64)>) -> Vec<Point2WithId> {
         let mut vec: Vec<Point2WithId> = vec![];
         for i in 0..xs.len() {
             let mut is_duplicated_value = false;
@@ -465,7 +550,26 @@ mod tests {
                 }
             }
             if !is_duplicated_value {
-                let p = Point2WithId::new(i as i32, xs[i], xs[i]);
+                let p = Point2WithId::new(i as i32, xs[i].0, xs[i].1);
+                vec.push(p);
+            }
+        }
+
+        vec
+    }
+
+    fn qc_value_vec_to_3d_points_vec(xs: &Vec<(f64, f64, f64)>) -> Vec<Point3WithId> {
+        let mut vec: Vec<Point3WithId> = vec![];
+        for i in 0..xs.len() {
+            let mut is_duplicated_value = false;
+            for j in 0..i {
+                if xs[i] == xs[j] {
+                    is_duplicated_value = true;
+                    break;
+                }
+            }
+            if !is_duplicated_value {
+                let p = Point3WithId::new(i as i32, xs[i].0, xs[i].1, xs[i].2);
                 vec.push(p);
             }
         }
