@@ -515,7 +515,7 @@ mod tests {
 
                 if a < b {
                     Ordering::Less
-                } else if (a == b) {
+                } else if a == b {
                     Ordering::Equal
                 } else {
                     Ordering::Greater
