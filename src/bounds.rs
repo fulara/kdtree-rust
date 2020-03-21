@@ -1,4 +1,4 @@
-use kdtree::*;
+use crate::*;
 
 pub struct Bounds {
     pub bounds: [(f64, f64); 3],
@@ -90,7 +90,7 @@ impl Bounds {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use kdtree::test_common::*;
+    use crate::test_common::*;
 
     #[test]
     fn bounds_test() {

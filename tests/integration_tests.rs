@@ -3,15 +3,15 @@ extern crate rand;
 
 use rand::Rng;
 
-use kdtree::kdtree::test_common::*;
-use kdtree::kdtree::KdtreePointTrait;
+use kdtree::test_common::*;
+use kdtree::KdtreePointTrait;
 
 fn gen_random() -> f64 {
     rand::thread_rng().gen_range(0., 10000.)
 }
 
 fn find_nn_with_linear_search(points: &Vec<Point3WithId>, find_for: Point3WithId) -> &Point3WithId {
-    let distance_fun = kdtree::kdtree::distance::squared_euclidean;
+    let distance_fun = kdtree::distance::squared_euclidean;
 
     let mut best_found_distance = distance_fun(find_for.dims(), points[0].dims());
     let mut closed_found_point = &points[0];
@@ -47,9 +47,9 @@ fn generate_points(point_count: usize) -> Vec<Point3WithId> {
 fn test_against_1000_random_points() {
     let point_count = 1000usize;
     let points = generate_points(point_count);
-    kdtree::kdtree::test_common::Point1WithId::new(0, 0.);
+    kdtree::test_common::Point1WithId::new(0, 0.);
 
-    let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
+    let tree = kdtree::Kdtree::new(&mut points.clone());
 
     //test points pushed into the tree, id should be equal.
     for i in 0..point_count {
@@ -74,8 +74,8 @@ fn test_incrementally_build_tree_against_built_at_once() {
     let point_count = 2000usize;
     let mut points = generate_points(point_count);
 
-    let tree_built_at_once = kdtree::kdtree::Kdtree::new(&mut points.clone());
-    let mut tree_built_incrementally = kdtree::kdtree::Kdtree::new(&mut points[0..1]);
+    let tree_built_at_once = kdtree::Kdtree::new(&mut points.clone());
+    let mut tree_built_incrementally = kdtree::Kdtree::new(&mut points[0..1]);
 
     for i in 1..point_count {
         let p = &points[i];
@@ -105,6 +105,7 @@ fn test_incrementally_build_tree_against_built_at_once() {
 
 #[test]
 fn test_within_1000_random_points() {
+    use kdtree::distance::*;
     let point_count = 100usize;
 
     // Query Point
@@ -116,7 +117,7 @@ fn test_within_1000_random_points() {
         for i in 0..point_count {
             points.push(Point3WithId::new(i as i32, i as f64, 0.0, 0.0));
         }
-        let mykdtree = kdtree::kdtree::Kdtree::new(&mut points.clone());
+        let mykdtree = kdtree::Kdtree::new(&mut points.clone());
 
         // Linear mapping of points
         for i in 0..point_count {
@@ -130,7 +131,7 @@ fn test_within_1000_random_points() {
         for i in 0..point_count {
             points.push(Point3WithId::new(i as i32, i as f64, i as f64, 0.0));
         }
-        let mykdtree = kdtree::kdtree::Kdtree::new(&mut points.clone());
+        let mykdtree = kdtree::Kdtree::new(&mut points.clone());
 
         // flat diagonal mapping of points
         for i in 0..point_count {
@@ -144,7 +145,7 @@ fn test_within_1000_random_points() {
         for i in 0..point_count {
             points.push(Point3WithId::new(i as i32, i as f64, i as f64, i as f64));
         }
-        let mykdtree = kdtree::kdtree::Kdtree::new(&mut points.clone());
+        let mykdtree = kdtree::Kdtree::new(&mut points.clone());
 
         // flat diagonal mapping of points
         for i in 0..point_count {

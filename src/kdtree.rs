@@ -1,11 +1,6 @@
-pub mod distance;
-pub mod test_common;
-
-mod bounds;
-mod partition;
-
-use self::bounds::*;
-use self::distance::*;
+use crate::bounds::*;
+use crate::distance::*;
+use crate::partition;
 
 use std::cmp;
 use std::collections::BTreeSet;
@@ -338,7 +333,7 @@ impl<T: KdtreePointTrait> KdtreeNode<T> {
 
 #[cfg(test)]
 mod tests {
-    use kdtree::test_common::Point2WithId;
+    use crate::test_common::Point2WithId;
 
     use super::*;
 
