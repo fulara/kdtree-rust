@@ -55,7 +55,7 @@ fn bench_single_loop_times_for_1000_node_tree(c: &mut Criterion) {
         let len = 1000usize;
         let points = generate_points(len);
 
-        let tree = kdtree::Kdtree::new(&mut points.clone());
+        let tree = kdtree::Kdtree::new(&mut points.clone()).unwrap();
 
         b.iter(|| tree.nearest_search(&points[0]))
     });
@@ -66,7 +66,7 @@ fn bench_single_loop_times_for_100_000_node_tree(c: &mut Criterion) {
         let len = 1000_000usize;
         let points = generate_points(len);
 
-        let tree = kdtree::Kdtree::new(&mut points.clone());
+        let tree = kdtree::Kdtree::new(&mut points.clone()).unwrap();
 
         b.iter(|| tree.nearest_search(&points[0]))
     });
@@ -79,7 +79,7 @@ fn bench_single_loop_times_for_1000_node_tree_within_1000(c: &mut Criterion) {
             let len = 1000usize;
             let points = generate_points(len);
 
-            let tree = kdtree::Kdtree::new(&mut points.clone());
+            let tree = kdtree::Kdtree::new(&mut points.clone()).unwrap();
 
             b.iter(|| tree.within(&points[0], 1000.0, &squared_euclidean))
         },
@@ -93,7 +93,7 @@ fn bench_creating_1000_000_node_tree(c: &mut Criterion) {
         let points = generate_points(len);
 
         b.iter(|| {
-            kdtree::Kdtree::new(&mut points.clone());
+            kdtree::Kdtree::new(&mut points.clone()).unwrap();
         })
     });
 }
@@ -102,7 +102,7 @@ fn bench_adding_same_node_to_1000_tree(c: &mut Criterion) {
     c.bench_function("bench_adding_same_node_to_1000_tree", |b| {
         let len = 1000usize;
         let mut points = generate_points(len);
-        let mut tree = kdtree::Kdtree::new(&mut points);
+        let mut tree = kdtree::Kdtree::new(&mut points).unwrap();
 
         let point = Point3WithId::new(-1 as i32, gen_random(), gen_random(), gen_random());
         b.iter(|| {
@@ -116,7 +116,7 @@ fn bench_incrementally_building_the_1000_tree(c: &mut Criterion) {
         b.iter(|| {
             let len = 1usize;
             let mut points = generate_points(len);
-            let mut tree = kdtree::Kdtree::new(&mut points);
+            let mut tree = kdtree::Kdtree::new(&mut points).unwrap();
             for _ in 0..1000 {
                 let point = Point3WithId::new(-1 as i32, gen_random(), gen_random(), gen_random());
                 tree.insert_node(point);

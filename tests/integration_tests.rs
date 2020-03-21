@@ -49,7 +49,7 @@ fn test_against_1000_random_points() {
     let points = generate_points(point_count);
     kdtree::test_common::Point1WithId::new(0, 0.);
 
-    let tree = kdtree::Kdtree::new(&mut points.clone());
+    let tree = kdtree::Kdtree::new(&mut points.clone()).unwrap();
 
     //test points pushed into the tree, id should be equal.
     for i in 0..point_count {
@@ -74,8 +74,8 @@ fn test_incrementally_build_tree_against_built_at_once() {
     let point_count = 2000usize;
     let mut points = generate_points(point_count);
 
-    let tree_built_at_once = kdtree::Kdtree::new(&mut points.clone());
-    let mut tree_built_incrementally = kdtree::Kdtree::new(&mut points[0..1]);
+    let tree_built_at_once = kdtree::Kdtree::new(&mut points.clone()).unwrap();
+    let mut tree_built_incrementally = kdtree::Kdtree::new(&mut points[0..1]).unwrap();
 
     for i in 1..point_count {
         let p = &points[i];
@@ -117,7 +117,7 @@ fn test_within_1000_random_points() {
         for i in 0..point_count {
             points.push(Point3WithId::new(i as i32, i as f64, 0.0, 0.0));
         }
-        let mykdtree = kdtree::Kdtree::new(&mut points.clone());
+        let mykdtree = kdtree::Kdtree::new(&mut points.clone()).unwrap();
 
         // Linear mapping of points
         for i in 0..point_count {
@@ -131,7 +131,7 @@ fn test_within_1000_random_points() {
         for i in 0..point_count {
             points.push(Point3WithId::new(i as i32, i as f64, i as f64, 0.0));
         }
-        let mykdtree = kdtree::Kdtree::new(&mut points.clone());
+        let mykdtree = kdtree::Kdtree::new(&mut points.clone()).unwrap();
 
         // flat diagonal mapping of points
         for i in 0..point_count {
@@ -145,7 +145,7 @@ fn test_within_1000_random_points() {
         for i in 0..point_count {
             points.push(Point3WithId::new(i as i32, i as f64, i as f64, i as f64));
         }
-        let mykdtree = kdtree::Kdtree::new(&mut points.clone());
+        let mykdtree = kdtree::Kdtree::new(&mut points.clone()).unwrap();
 
         // flat diagonal mapping of points
         for i in 0..point_count {

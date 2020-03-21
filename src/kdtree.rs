@@ -18,9 +18,9 @@ pub struct Kdtree<KdtreePoint> {
 }
 
 impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
-    pub fn new(mut points: &mut [KdtreePoint]) -> Kdtree<KdtreePoint> {
+    pub fn new(mut points: &mut [KdtreePoint]) -> Option<Kdtree<KdtreePoint>> {
         if points.len() == 0 {
-            panic!("empty vector point not allowed");
+            return None;
         }
 
         let mut tree = Kdtree {
@@ -32,7 +32,7 @@ impl<KdtreePoint: KdtreePointTrait> Kdtree<KdtreePoint> {
 
         tree.rebuild_tree(&mut points);
 
-        tree
+        Some(tree)
     }
 
     pub fn rebuild_tree(&mut self, points: &mut [KdtreePoint]) {
@@ -339,11 +339,10 @@ mod tests {
     use std::cmp::Ordering;
 
     #[test]
-    #[should_panic(expected = "empty vector point not allowed")]
-    fn should_panic_given_empty_vector() {
+    fn given_empty_vector_fails_to_create() {
         let mut empty_vec: Vec<Point2WithId> = vec![];
 
-        Kdtree::new(&mut empty_vec);
+        assert!(Kdtree::new(&mut empty_vec).is_none());
     }
 
     quickcheck! {
@@ -358,7 +357,7 @@ mod tests {
                 vec.push(p);
             }
 
-            let tree = Kdtree::new(&mut qc_value_vec_to_2d_points_vec(&xs));
+            let tree = Kdtree::new(&mut qc_value_vec_to_2d_points_vec(&xs)).unwrap();
 
             let mut to_iterate : Vec<usize> = vec![];
             to_iterate.push(0);
@@ -385,7 +384,7 @@ mod tests {
             }
 
             let point_vec = qc_value_vec_to_2d_points_vec(&xs);
-            let tree = Kdtree::new(&mut point_vec.clone());
+            let tree = Kdtree::new(&mut point_vec.clone()).unwrap();
 
             for p in &point_vec {
                 let found_nn = tree.nearest_search(p);
@@ -405,7 +404,7 @@ mod tests {
 
             let point_vec = qc_value_vec_to_3d_points_vec(&tree);
             let search_points_vec = qc_value_vec_to_3d_points_vec(&search_points);
-            let tree = Kdtree::new(&mut point_vec.clone());
+            let tree = Kdtree::new(&mut point_vec.clone()).unwrap();
 
 
             for storage in vec![&point_vec, &search_points_vec] {
@@ -429,7 +428,7 @@ mod tests {
 
             let point_vec = qc_value_vec_to_3d_points_vec(&tree);
             let search_points_vec = qc_value_vec_to_3d_points_vec(&search_points);
-            let tree = Kdtree::new(&mut point_vec.clone());
+            let tree = Kdtree::new(&mut point_vec.clone()).unwrap();
 
 
             for storage in vec![&point_vec, &search_points_vec] {
@@ -452,7 +451,7 @@ mod tests {
     fn has_neighbor_in_range() {
         let mut vec: Vec<Point2WithId> = vec![Point2WithId::new(0, 2., 0.)];
 
-        let tree = Kdtree::new(&mut vec);
+        let tree = Kdtree::new(&mut vec).unwrap();
 
         assert_eq!(
             false,
@@ -478,7 +477,7 @@ mod tests {
 
         let mut vec = vec![Point2WithId::new(0, 0., 0.)];
 
-        let mut tree = Kdtree::new(&mut vec);
+        let mut tree = Kdtree::new(&mut vec).unwrap();
 
         tree.insert_node(Point2WithId::new(0, 1., 0.));
         tree.insert_node(Point2WithId::new(0, -1., 0.));
@@ -497,7 +496,7 @@ mod tests {
     fn incremental_add_filters_duplicates() {
         let mut vec = vec![Point2WithId::new(0, 0., 0.)];
 
-        let mut tree = Kdtree::new(&mut vec);
+        let mut tree = Kdtree::new(&mut vec).unwrap();
 
         let node = Point2WithId::new(0, 1., 0.);
         tree.insert_node(node);

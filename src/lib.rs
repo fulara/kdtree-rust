@@ -1,7 +1,7 @@
 //! # Kdtree-Rust
 //!
 //! K-dimensional tree for Rust (sliding midpoint rule implemenation)
-//! Handles only 2D and 3D at the moment. 
+//! Handles only 2D and 3D at the moment.
 //!
 //! ## Usage
 //!
@@ -32,7 +32,7 @@
 //! let c = Point3WithId { dims: [1.0, 1.0, 0.0], id: 2};
 //! let d = Point3WithId { dims: [1.0, 1.0, 1.0], id: 3};
 //! let mut pts = vec![a,b,c,d];
-//! let tree = Kdtree::new(&mut pts);
+//! let tree = Kdtree::new(&mut pts).expect("tree creation failed, empty input vec?");
 //!
 //! assert_eq!(tree.nearest_search(&a).id, a.id);
 //!
