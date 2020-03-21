@@ -1,6 +1,7 @@
 //! # Kdtree-Rust
 //!
 //! K-dimensional tree for Rust (sliding midpoint rule implemenation)
+//! Handles only 2D and 3D at the moment. 
 //!
 //! ## Usage
 //!
@@ -39,6 +40,7 @@
 //! assert_eq!(tree.within(&a, 1.001, &euclidean).len(), 2);
 //! assert_eq!(tree.within(&a, 1.415, &euclidean).len(), 3);
 //! assert_eq!(tree.within(&a, 2.0, &euclidean).len(), 4);
+//! // basically equivalent as line above, but much less costly as no sqrt.
 //! assert_eq!(tree.within(&a, 4.0, &squared_euclidean).len(), 4);
 //! ```
 //!
