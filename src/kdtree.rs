@@ -435,12 +435,12 @@ mod tests {
             for storage in vec![&point_vec, &search_points_vec] {
                 let storage: &Vec<Point3WithId> = storage;
                 for p in storage {
-                    let mut tree_result = tree.within(p, dist, &euclidean);
-                    let mut linear_result = linear_within(&point_vec, p, dist, &euclidean).collect::<Vec<_>>();
+                    let mut tree_result = tree.within(p, dist, &squared_euclidean);
+                    let mut linear_result = linear_within(&point_vec, p, dist, &squared_euclidean).collect::<Vec<_>>();
                     tree_result.sort_by(|a, b| a.partial_cmp(b).unwrap());
                     linear_result.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-                    assert_eq!(tree_result, linear_result);
+                    assert_eq!(tree_result, linear_result, "testing within of {:?} dist: {} linear_result: {:?} tree_result: {:?} for tree_nodes: {:?}", p, dist, linear_result, tree_result, point_vec);
                 }
             }
 
@@ -528,7 +528,7 @@ mod tests {
         nodes: &'a [Point],
         point: &'a Point,
         dist: f64,
-        f: &F,
+        f: &'a F,
     ) -> impl Iterator<Item = &'a Point>
     where
         F: Fn(&[f64], &[f64]) -> f64,
@@ -536,7 +536,7 @@ mod tests {
         let point = point.clone();
         nodes
             .iter()
-            .filter(move |n| euclidean(n.dims(), point.dims()) <= dist)
+            .filter(move |n| f(n.dims(), point.dims()) <= dist)
     }
 
     fn qc_value_vec_to_2d_points_vec(xs: &Vec<(f64, f64)>) -> Vec<Point2WithId> {
