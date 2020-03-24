@@ -6,7 +6,7 @@ Implementation uses single `Vec<Node>` to store all its contents, allowing for q
 
 ### Usage
 Tree can only be used with types implementing trait:
-```
+```rust
 pub trait KdtreePointTrait : Copy  {
     fn dims(&self) -> &[f64];
 }
@@ -14,7 +14,7 @@ pub trait KdtreePointTrait : Copy  {
 
 Thanks to this trait you can use any dimension. Keep in mind that the tree currently only supports up to 3D [#2](/../../issues/2).  
 Examplary implementation would be:
-```
+```rust
 pub struct Point3WithId {
     dims: [f64; 3],
     pub id: i32,
@@ -29,7 +29,7 @@ impl KdtreePointTrait for Point3WithId {
 ```
 Where id is just a example of the way in which I carry the data.  
 With that trait implemented you are good to go to use the tree. Keep in mind that the kdtree is not a self balancing tree, It does support adding the nodes with method 'insert_node' and there is indeed a code to rebuild the tree if depths grows substantially. Basic usage can be found in the integration test, fragment copied below:
-```
+```rust
 let tree = kdtree::kdtree::Kdtree::new(&mut points.clone());
 
 //test points pushed into the tree, id should be equal.
@@ -45,7 +45,7 @@ for now the removal of the nodes is not supported.
 
 ## Benchmark
 `cargo bench` using travis :)
-```
+```text
 running 3 tests
 test bench_creating_1000_000_node_tree          ... bench: 275,155,622 ns/iter (+/- 32,713,321)
 test bench_adding_same_node_to_1000_tree        ... bench:          42 ns/iter (+/- 11)
@@ -60,7 +60,7 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 4 measured
 
 ### Benchmark - comparison with CGAL.
 Since raw values arent saying much I've created the benchmark comparing this implementation against CGAL. code of the benchmark is available here: https://github.com/fulara/kdtree-benchmarks
-```
+```text
 Benchmark                           Time           CPU Iterations
 -----------------------------------------------------------------
 Cgal_tree_buildup/10             2226 ns       2221 ns     313336
